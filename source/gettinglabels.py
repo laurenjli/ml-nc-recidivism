@@ -32,7 +32,7 @@ def query_db(query, csv_filename="db_output.csv"):
             for row in rv:
                 csvwriter.writerow(row) 
 
-        con.close()
+    con.close()
     return tuple(rv)
 
 
