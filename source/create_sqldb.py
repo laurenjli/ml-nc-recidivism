@@ -34,6 +34,7 @@ tables =  ['OFNT3CE1','INMT4AA1', 'INMT4BB1', 'INMT9CF1',\
            'OFNT1BA1', 'OFNT3BB1', 
            'OFNT3DE1', 'INMT4CA1'] 
 
+
 for table in tables:
     print(table)
     file_name = os.path.join(data_dir, "{}.csv".format(table))
