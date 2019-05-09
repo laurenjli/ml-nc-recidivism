@@ -5,7 +5,7 @@ Code to join tables and get labels for NC recidivism data
 import sqlite3
 import csv
 
-DATABASE_FILENAME="../ncdoc_data/inmates.db"
+DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
 
 def query_db(query, table_name='data', csv_filename="db_output.csv"):
     '''
