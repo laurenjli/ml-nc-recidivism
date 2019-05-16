@@ -7,7 +7,7 @@ import csv
 
 DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
 
-def query_db(query, args, database_path=DATABASE_FILENAME, table_name='data', csv_filename=None):
+def query_db(query, args, database_path=DATABASE_FILENAME, table_name='data', new_table=True, csv_filename=None):
     '''
     Code to query db from python
     Creates new table to place output and writes in csv file
@@ -32,11 +32,12 @@ def query_db(query, args, database_path=DATABASE_FILENAME, table_name='data', cs
             rv.append(row)
 
         # write into new table (data)
-        cur.execute('DROP TABLE IF EXISTS {}'.format(table_name))
-        col_names = []
-        for col in header:
-            col_names.append(col)
-        cur.execute('CREATE TABLE {} ({});'.format(table_name, ",".join(col_names)))
+        if new_table:
+            cur.execute('DROP TABLE IF EXISTS {}'.format(table_name))
+            col_names = []
+            for col in header:
+                col_names.append(col)
+            cur.execute('CREATE TABLE {} ({});'.format(table_name, ",".join(col_names)))
         for row in rv:
             cur.execute('INSERT INTO {} VALUES ({});'.format(table_name,",".join(['?']*len(header))), row)
             
@@ -113,7 +114,7 @@ def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_
 
     args = (default_max, time_period)
 
-    query_db(query, args, database_path, table_name)
+    query_db(query, args, database_path, table_name, new_table=True)
     
 
 
