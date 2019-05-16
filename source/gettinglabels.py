@@ -27,10 +27,6 @@ def query_db(query, args, database_path=DATABASE_FILENAME, table_name='data', ne
     header = get_header(cur)
     
     if output:
-        rv.append(header)
-        for row in output:
-            rv.append(row)
-
         # write into new table (data)
         if new_table:
             cur.execute('DROP TABLE IF EXISTS {}'.format(table_name))
@@ -38,11 +34,15 @@ def query_db(query, args, database_path=DATABASE_FILENAME, table_name='data', ne
             for col in header:
                 col_names.append(col)
             cur.execute('CREATE TABLE {} ({});'.format(table_name, ",".join(col_names)))
-        for row in rv:
+        for row in output:
             cur.execute('INSERT INTO {} VALUES ({});'.format(table_name,",".join(['?']*len(header))), row)
             
         # write into csv if csv_filename is not None
         if csv_filename:
+            rv.append(header)
+            for row in output:
+                rv.append(row)
+
             with open(csv_filename, 'w') as f:
                 csvwriter = csv.writer(f)
                 for row in rv:
