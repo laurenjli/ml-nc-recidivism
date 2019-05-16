@@ -7,7 +7,7 @@ import csv
 
 DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
 
-def query_db(query, database_path=DATABASE_FILENAME, table_name='data', csv_filename="db_output.csv"):
+def query_db(query, database_path=DATABASE_FILENAME, table_name='data', csv_filename=None):
     '''
     Code to query db from python
     Creates new table to place output and writes in csv file
