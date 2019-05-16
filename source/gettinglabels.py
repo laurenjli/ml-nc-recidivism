@@ -7,12 +7,13 @@ import csv
 
 DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
 
-def query_db(query, database_path=DATABASE_FILENAME, table_name='data', csv_filename=None):
+def query_db(query, args, database_path=DATABASE_FILENAME, table_name='data', csv_filename=None):
     '''
     Code to query db from python
     Creates new table to place output and writes in csv file
     Input:
         query: (str) sql query
+        args: a tuple of args
         table_name: (str) new table name, optional
         csv_filename: output file name, optional
     Returns None
@@ -22,7 +23,7 @@ def query_db(query, database_path=DATABASE_FILENAME, table_name='data', csv_file
 
     rv = []
     
-    output = cur.execute(query).fetchall()
+    output = cur.execute(query, args).fetchall()
     header = get_header(cur)
     
     if output:
@@ -107,10 +108,12 @@ def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_
         and date(t1.END_DATE) <= date(t2.START_DATE) \
         order by date(t2.START_DATE) \
         limit 1 \
-    ) - julianday(END_DATE), {}) < {} then 1 else 0 end) as LABEL \
-    from final as t1;".format(default_max, time_period)
+    ) - julianday(END_DATE), %s) < %s then 1 else 0 end) as LABEL \
+    from final as t1;"
 
-    query_db(query, database_path, table_name)
+    args = (default_max, time_period)
+
+    query_db(query, args, database_path, table_name)
     
 
 
