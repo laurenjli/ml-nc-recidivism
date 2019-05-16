@@ -109,7 +109,7 @@ def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_
         and date(t1.END_DATE) <= date(t2.START_DATE) \
         order by date(t2.START_DATE) \
         limit 1 \
-    ) - julianday(END_DATE), %s) < %s then 1 else 0 end) as LABEL \
+    ) - julianday(END_DATE), ?) < ? then 1 else 0 end) as LABEL \
     from final as t1;"
 
     args = (default_max, time_period)
