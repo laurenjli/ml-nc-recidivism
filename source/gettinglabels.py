@@ -7,7 +7,7 @@ import csv
 
 DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
 
-def query_db(query, table_name='data', csv_filename="db_output.csv"):
+def query_db(query, database_path=DATABASE_FILENAME, table_name='data', csv_filename="db_output.csv"):
     '''
     Code to query db from python
     Creates new table to place output and writes in csv file
@@ -17,7 +17,7 @@ def query_db(query, table_name='data', csv_filename="db_output.csv"):
         csv_filename: output file name, optional
     Returns None
     '''
-    con = sqlite3.connect(DATABASE_FILENAME)
+    con = sqlite3.connect(database_path)
     cur = con.cursor()
 
     rv = []
@@ -39,11 +39,12 @@ def query_db(query, table_name='data', csv_filename="db_output.csv"):
         for row in rv:
             cur.execute('INSERT INTO {} VALUES ({});'.format(table_name,",".join(['?']*len(header))), row)
             
-        # write into csv
-        with open(csv_filename, 'w') as f:
-            csvwriter = csv.writer(f)
-            for row in rv:
-                csvwriter.writerow(row) 
+        # write into csv if csv_filename is not None
+        if csv_filename:
+            with open(csv_filename, 'w') as f:
+                csvwriter = csv.writer(f)
+                for row in rv:
+                    csvwriter.writerow(row) 
 
     con.commit()
     con.close()
@@ -61,7 +62,7 @@ def get_header(cursor):
 
     return header
     
-def create_labels(time_period = 365.0, default_max = 10000.0, table_name = 'labels'):
+def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_max = 10000.0, table_name = 'labels'):
     '''
     This function creates a new relation in the database with labels for the given time_period.
 
@@ -109,12 +110,15 @@ def create_labels(time_period = 365.0, default_max = 10000.0, table_name = 'labe
     ) - julianday(END_DATE), {}) < {} then 1 else 0 end) as LABEL \
     from final as t1;".format(default_max, time_period)
 
-    query_db(query, table_name)
+    query_db(query, database_path, table_name)
     
 
 
 if __name__ == '__main__':
-    create_labels(time_period = 365.0, default_max = 10000.0, table_name = 'labels')
+    create_labels(database_path = DATABASE_FILENAME,
+                  time_period = 365.0, 
+                  default_max = 10000.0, 
+                  table_name = 'labels')
 
 
 # In sqlite:
