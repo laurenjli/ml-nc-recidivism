@@ -115,6 +115,7 @@ def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_
     args = (default_max, time_period)
 
     query_db(query, args, database_path, table_name, new_table=True)
+    print('label created')
     
 
 
