@@ -43,38 +43,53 @@ def add_features(database_path=DATABASE_FILENAME):
     print('feature created')
 
 
-def temporal_validation(train_start_year=1995, test_start_year=1997, time_period=365.0):
+def temporal_validation(csv_name, train_start_year, test_start_year, time_period=365.0):
     '''
     Splitting up train and test sets based on the year specified
     e.g. train 2015 using 2016 to get labels (defined by time period),
     test on 2017
 
     To implement: 
-    filter data from start year to end year -365 days to be in train set
-    filter data for end year to be in test set
+        Train data - from train start year to (test start year - timeperiod)
+        filter data for end year to be in test set
     '''
-    # Generating the Labels - labels table in db
-    gettinglabels.create_labels(DATABASE_FILENAME, time_period = time_period, default_max = 10000.0, table_name = 'labels')
 
-    # Adding on Features to the database - data table in db
-    add_features()
+    train_query = """
+    SELECT * FROM data
+    WHERE END_DATE >= ? + '01-01'
+    OR julianday(END_DATE) < julianday(? + '01-01') - ?
+    """
+    train_args = (str(train_start_year), str(test_start_year), time_period)
 
-    # Splitting Train and Test sets
-    # conn = sqlite3.connect(DATABASE_FILENAME)
-    # gettinglabels.query_db(train_query, args, DATABASE_FILENAME, table_name='traindata', new_table=True)
-    # gettinglabels.query_db(test_query, args, DATABASE_FILENAME, table_name='testdata', new_table=True)
-    
-    # command = '''
-    # select * from labels
-    # '''
+    gettinglabels.query_db(train_query, train_args, DATABASE_FILENAME, 
+                           table_name='traindata', new_table=True, 
+                           csv_filename=CSVFOLDER + 'traintest/' + csv_name + '_train.csv')
+    print("created {} train set".format(csv_name))
 
-    # df = pd.read_sql_query(command, conn)
+    test_query = """
+    SELECT * FROM data
+    WHERE END_DATE LIKE ?
+    """
+    test_args = (str(test_start_year)+'%',)
+        
+    gettinglabels.query_db(test_query, test_args, DATABASE_FILENAME, 
+                           table_name='testdata', new_table=True, 
+                           csv_filename=CSVFOLDER + 'traintest/' + csv_name+ '_test.csv')
+    print("created {} test set".format(csv_name))
 
-    # https://www.dataquest.io/blog/python-pandas-databases/
+
 
 if __name__ == '__main__':
-#    setup() # To load database of data tables
-    temporal_validation(train_start_year=1995, test_start_year=1997, time_period=365.0)
+    time_period = 365.0
+
+#    setup()  # To load database of data tables
+    gettinglabels.create_labels(DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')  # Get labels
+    add_features()
+
+    test_year=1997
+    while test_year < 2018:
+        temporal_validation('test_'+ str(test_year), train_start_year=1995, test_start_year=test_year, time_period=time_period)
+        test_year += 1
 
 
 
