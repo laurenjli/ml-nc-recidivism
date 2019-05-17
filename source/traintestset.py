@@ -56,10 +56,10 @@ def temporal_validation(csv_name, train_start_year, test_start_year, time_period
 
     train_query = """
     SELECT * FROM data
-    WHERE END_DATE >= ? + '01-01'
-    OR julianday(END_DATE) < julianday(? + '01-01') - ?
+    WHERE END_DATE >= ?
+    AND julianday(END_DATE) < julianday(?) - ?
     """
-    train_args = (str(train_start_year), str(test_start_year), time_period)
+    train_args = (str(train_start_year)+'-01-01', str(test_start_year)+'-01-01', time_period)
 
     gettinglabels.query_db(train_query, train_args, DATABASE_FILENAME, 
                            table_name='traindata', new_table=True, 
