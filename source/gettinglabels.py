@@ -23,7 +23,10 @@ def query_db(query, args, database_path=DATABASE_FILENAME, table_name='data', ne
 
     rv = []
     
-    output = cur.execute(query, args).fetchall()
+    if args:
+        output = cur.execute(query, args).fetchall()
+    else:
+        output = cur.execute(query).fetchall()
     header = get_header(cur)
     
     if output:
