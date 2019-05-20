@@ -75,7 +75,8 @@ def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1
         attributes_lst = ['INCARCERATION_LEN_DAYScat']
 
         results = classify(df_train, df_test, LABEL, MODELS, EVAL_METRICS, EVAL_METRICS_BY_LEVEL, CUSTOM_GRID, attributes_lst)
-
+        results[year] = year
+        
         if year == first_year:
             results.to_csv(results_file_name)#, index=False)
         else:
