@@ -38,11 +38,11 @@ EVAL_METRICS = ['auc']
 MODELS = ['LR', 'DT', 'SVM','KNN', 'RF', 'AB', 'BA']
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
-def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2000):
+def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2017):
     
     year = first_year
 
-    while year < last_year:
+    while year < last_year + 1:
         
         test_set = "test_{}_test.csv".format(year)
         train_set = "test_{}_train.csv".format(year)
@@ -76,12 +76,12 @@ def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1
 
         results = classify(df_train, df_test, LABEL, MODELS, EVAL_METRICS, EVAL_METRICS_BY_LEVEL, CUSTOM_GRID, attributes_lst)
         results[year] = year
-        
+
         if year == first_year:
-            results.to_csv(results_file_name)#, index=False)
+            results.to_csv(results_file_name, index=False)
         else:
             with open(results_file_name, 'a') as f:
-                results.to_csv(f, header=False)#, index=False) 
+                results.to_csv(f, header=False, index=False) 
         
         year += 1
 
