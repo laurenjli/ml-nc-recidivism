@@ -9,29 +9,7 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 
 #Define constants
 DATA_DIR = "../ncdoc_data/data/preprocessed/traintest"
-FILE_NAMES = [("test_1997_test.csv", "test_1997_train.csv"),\
-              ("test_1998_test.csv", "test_1998_train.csv"),\
-              ("test_1999_test.csv", "test_1999_train.csv"),\
-              ("test_2000_test.csv", "test_2000_train.csv"),\
-              ("test_2001_test.csv", "test_2001_train.csv"),\
-              ("test_2002_test.csv", "test_2002_train.csv"),\
-              ("test_2003_test.csv", "test_2003_train.csv"),\
-              ("test_2004_test.csv", "test_2004_train.csv"),\
-              ("test_2005_test.csv", "test_2005_train.csv"),\
-              ("test_2006_test.csv", "test_2006_train.csv"),\
-              ("test_2007_test.csv", "test_2007_train.csv"),\
-              ("test_2008_test.csv", "test_2008_train.csv"),\
-              ("test_2009_test.csv", "test_2009_train.csv"),\
-              ("test_2010_test.csv", "test_2010_train.csv"),\
-              ("test_2011_test.csv", "test_2011_train.csv"),\
-              ("test_2012_test.csv", "test_2012_train.csv"),\
-              ("test_2013_test.csv", "test_2013_train.csv"),\
-              ("test_2014_test.csv", "test_2014_train.csv"),\
-              ("test_2015_test.csv", "test_2015_train.csv"),\
-              ("test_2016_test.csv", "test_2016_train.csv"),\
-              ("test_2017_test.csv", "test_2017_train.csv")]
-
-RESULTS_FILE = "results"
+RESULTS_FILE = "results.csv"
 LABEL = "LABEL"
 
 #For this progress report I only ran the following small grid:
@@ -60,11 +38,11 @@ EVAL_METRICS = ['auc']
 MODELS = ['LR', 'DT', 'SVM','KNN', 'RF', 'AB', 'BA']
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
-def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE):
+def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2000):
     
-    year=1997
+    year = first_year
 
-    while year < 2018:
+    while year < last_year:
         
         test_set = "test_{}_test.csv".format(year)
         train_set = "test_{}_train.csv".format(year)
@@ -72,28 +50,38 @@ def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE):
         df_test = get_csv(dir, test_set)
         df_train = get_csv(dir, train_set)
 
-        #fill_nan(df_test, ['INCARCERATION_LEN_DAYS', 'PREFIX'], how='mean')
-        #fill_nan(df_train, ['INCARCERATION_LEN_DAYS', 'PREFIX'], how='mean')
+        fill_nan(df_test, ['INCARCERATION_LEN_DAYS', 'LABEL'], how='median')
+        fill_nan(df_train, ['INCARCERATION_LEN_DAYS', 'LABEL'], how='median')
 
-        df_test = remove_outliers(df_test, ['INCARCERATION_LEN_DAYS', 'PREFIX'], sd_threshold=3)
-        df_train = remove_outliers(df_train, ['INCARCERATION_LEN_DAYS', 'PREFIX'], sd_threshold=3)
+        df_test = remove_outliers(df_test, ['INCARCERATION_LEN_DAYS'], sd_threshold=3)
+        df_train = remove_outliers(df_train, ['INCARCERATION_LEN_DAYS'], sd_threshold=3)
 
-        df_test = categorical_to_dummy(df_test, ["INCARCERATION_LEN_DAYS"])
-        df_train = categorical_to_dummy(df_train, ["INCARCERATION_LEN_DAYS"])
+        df_test = discretize_variable(df_test, ["INCARCERATION_LEN_DAYS"])
+        df_train = discretize_variable(df_train, ["INCARCERATION_LEN_DAYS"])
 
-        df_test = discretize_variable(df_test, ["PREFIX"])
-        df_train = discretize_variable(df_train, ["PREFIX"])
-
-        attributes_lst = list(df.columns)
+        '''
+        #df_test = categorical_to_dummy(df_test, ["PREFIX"])
+        #df_train = categorical_to_dummy(df_train, ["PREFIX"])
+        
+        attributes_lst = list(df_test.columns)
         attributes_lst.remove("END_DATE")
         attributes_lst.remove("START_DATE")
+        attributes_lst.remove("ID")
+        attributes_lst.remove("PREFIX")
+        attributes_lst.remove("INCARCERATION_LEN_DAYS")
         attributes_lst.remove("LABEL")
+        '''
 
-        results = classify(df_train, df_test, LABEL, N_SAMPLES, DATE_COL, TRAIN_END, TRAIN_DAYS, MODELS, EVAL_METRICS,\
-                           EVAL_METRICS_BY_LEVEL, CUSTOM_GRID, attributes_lst)
+        attributes_lst = ['INCARCERATION_LEN_DAYScat']
 
-        results_file_name_year = '{}_{}{}'.format(results_file_name, year, '.csv')
-        results.to_csv(results_file_name_year, index=False)
+        results = classify(df_train, df_test, LABEL, MODELS, EVAL_METRICS, EVAL_METRICS_BY_LEVEL, CUSTOM_GRID, attributes_lst)
+
+        if year == first_year:
+            results.to_csv(results_file_name)#, index=False)
+        else:
+            with open(results_file_name, 'a') as f:
+                results.to_csv(f, header=False)#, index=False) 
+        
         year += 1
 
 if __name__ == "__main__":

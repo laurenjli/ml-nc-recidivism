@@ -173,7 +173,7 @@ def categorical_to_dummy(df, attribute_lst):
     ''' 
 
     for var in attribute_lst:
-        df = pd.get_dummies(df, columns=[var])
+        df = pd.get_dummies(df, columns=[var], dummy_na=True)
     return df
 
 def flag_to_dummy(df, attribute_lst, rename=True):
@@ -321,11 +321,11 @@ metrics = { 'accuracy':accuracy_at_threshold,
 ### Master Classifier
 
 
-def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, test_size=0.33, random_state=50):
+def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst):
     '''
     This function fits a set of classifiers and a dataframe with performance measures for each
     Input:
-        df: dataframe
+        train_set, test_set: dataframe for training and testing the models
         label: name of the Y variable
         n_samples: number of times that the data will be partitioned in training and testing sets.
         eval_metrics: list of threshold-independent metrics.
@@ -336,9 +336,9 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     '''
     results_columns = ['model','classifiers', 'parameters'] + eval_metrics + [metric + '_' + str(level) for level in eval_metrics_by_level[1] for metric in eval_metrics_by_level[0]]
     results =  pd.DataFrame(columns=results_columns)
-    y_train = train_set['label']
+    y_train = train_set[label]
     X_train = train_set.loc[:, attributes_lst]
-    y_test = test_set['label']
+    y_test = test_set[label]
     X_test = test_set.loc[:, attributes_lst]
     for model in models:
         grid = ParameterGrid(custom_grid[model])
