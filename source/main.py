@@ -11,17 +11,19 @@ warnings.simplefilter(action='ignore', category=FutureWarning)
 DATA_DIR = "../ncdoc_data/data/preprocessed/traintest"
 RESULTS_FILE = "results.csv"
 LABEL = "LABEL"
+SEED = 0
 
 #For this progress report I only ran the following small grid:
 CUSTOM_GRID = {
-'LR': { 'penalty': ['l1','l2'], 'C': [0.1,1]},
-'KNN' :{'n_neighbors': [5],'weights': ['uniform'],'algorithm': ['auto']},
-'DT': {'criterion': ['gini'], 'max_depth': [1],'min_samples_split': [10]},
-'SVM' :{'random_state':[0], 'tol':[1e-5]},
-'RF':{'n_estimators': [1], 'max_depth': [1], 'max_features': ['sqrt'],'min_samples_split': [10]},
-'AB': { 'algorithm': ['SAMME'], 'n_estimators': [1]},
-'BA': {'base_estimator': [LogisticRegression()], "n_estimators":[1]}}
+'LR': { 'penalty': ['l1','l2'], 'C': [0.01,0.1,1,10], 'random_state': [SEED]},
+'KNN' :{'n_neighbors': [3,5,10],'weights': ['uniform'],'algorithm': ['auto']},
+'DT': {'criterion': ['gini'], 'max_depth': [1,5,10],'min_samples_split': [10, 20, 50], 'random_state': [SEED]},
+'SVM' :{'C' :[0.01,0.1,1,10], 'tol':[1e-5], 'random_state': [SEED]},
+'RF':{'n_estimators': [1,10,100], 'max_depth': [5], 'max_features': ['sqrt'],'min_samples_split': [10, 20, 50], 'random_state': [SEED]},
+'AB': { 'algorithm': ['SAMME'], 'n_estimators': [1,10,100], 'random_state': [SEED]},
+'BA': {'base_estimator': [LogisticRegression()], "n_estimators":[1,10,100]}, 'random_state': [SEED]}
 '''
+
 CUSTOM_GRID = {
     'RF':{'n_estimators': [1,10,100,1000,10000], 'max_depth': [1,5,10,20,50,100], 'max_features': ['sqrt','log2'],'min_samples_split': [2,5,10], 'n_jobs': [-1]},
     'LR': { 'penalty': ['l1','l2'], 'C': [0.00001,0.0001,0.001,0.01,0.1,1,10]},
