@@ -97,7 +97,7 @@ if __name__ == '__main__':
     add_features() # Create new table data for features and data
 
     test_year=1997
-    while test_year < 2018:
+    while test_year <= 2018:
         temporal_validation('test_'+ str(test_year), train_start_year=1995, test_start_year=test_year, time_period=time_period)
         test_year += 1
 
