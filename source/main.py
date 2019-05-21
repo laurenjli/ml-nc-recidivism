@@ -38,7 +38,7 @@ EVAL_METRICS = ['auc']
 MODELS = ['LR', 'DT', 'SVM','KNN', 'RF', 'AB', 'BA']
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
-def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2017):
+def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2018):
     
     year = first_year
 
@@ -53,8 +53,8 @@ def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1
         fill_nan(df_test, ['INCARCERATION_LEN_DAYS', 'LABEL'], how='median')
         fill_nan(df_train, ['INCARCERATION_LEN_DAYS', 'LABEL'], how='median')
 
-        df_test = remove_outliers(df_test, ['INCARCERATION_LEN_DAYS'], sd_threshold=3)
-        df_train = remove_outliers(df_train, ['INCARCERATION_LEN_DAYS'], sd_threshold=3)
+#        df_test = remove_outliers(df_test, ['INCARCERATION_LEN_DAYS'], sd_threshold=3)
+#        df_train = remove_outliers(df_train, ['INCARCERATION_LEN_DAYS'], sd_threshold=3)
 
         df_test = discretize_variable(df_test, ["INCARCERATION_LEN_DAYS"])
         df_train = discretize_variable(df_train, ["INCARCERATION_LEN_DAYS"])
