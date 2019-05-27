@@ -100,7 +100,7 @@ def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_
     and EARLIEST_SENTENCE_EFFECTIVE_DT NOT LIKE '0001%' \
     and EARLIEST_SENTENCE_EFFECTIVE_DT NOT LIKE '9999%'), \
     joined as (\
-    select sentence_comp.ID, sentence_comp.PREFIX, min(court_commitment.EARLIEST_SENTENCE_EFFECTIVE_DT, sentence_comp.start) as START_DATE, min(sentence_comp.end_actual, sentence_comp.end_proj) as END_DATE\
+    select sentence_comp.ID, sentence_comp.PREFIX, min(court_commitment.EARLIEST_SENTENCE_EFFECTIVE_DT, sentence_comp.start) as START_DATE, sentence_comp.end_actual as END_DATE\
     from sentence_comp natural join court_commitment),\
     final as ( \
     select felons_only.ID, felons_only.PREFIX, joined.START_DATE, joined.END_DATE \
