@@ -87,18 +87,14 @@ def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_
     select INMATE_DOC_NUMBER as ID, INMATE_COMMITMENT_PREFIX as PREFIX, min(SENTENCE_BEGIN_DATE_FOR_MAX) as start, max(ACTUAL_SENTENCE_END_DATE) as end_actual, max(PROJECTED_RELEASE_DATE_PRD) as end_proj \
     FROM INMT4BB1 \
     where SENTENCE_BEGIN_DATE_FOR_MAX NOT LIKE '0001%' \
-    and SENTENCE_BEGIN_DATE_FOR_MAX NOT LIKE '9999%'\
     and PROJECTED_RELEASE_DATE_PRD NOT LIKE '0001%' \
-    and PROJECTED_RELEASE_DATE_PRD NOT LIKE '9999%' \
     and ACTUAL_SENTENCE_END_DATE NOT LIKE '0001%' \
-    and ACTUAL_SENTENCE_END_DATE NOT LIKE '9999%' \
     group by INMATE_DOC_NUMBER, INMATE_COMMITMENT_PREFIX),\
     court_commitment as (\
     select OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, EARLIEST_SENTENCE_EFFECTIVE_DT, NEW_PERIOD_OF_INCARCERATION_FL \
     from OFNT3BB1 \
     where NEW_PERIOD_OF_INCARCERATION_FL = 'Y' \
-    and EARLIEST_SENTENCE_EFFECTIVE_DT NOT LIKE '0001%' \
-    and EARLIEST_SENTENCE_EFFECTIVE_DT NOT LIKE '9999%'), \
+    and EARLIEST_SENTENCE_EFFECTIVE_DT NOT LIKE '0001%'), \
     joined as (\
     select sentence_comp.ID, sentence_comp.PREFIX, min(court_commitment.EARLIEST_SENTENCE_EFFECTIVE_DT, sentence_comp.start) as START_DATE, sentence_comp.end_actual as END_DATE\
     from sentence_comp natural join court_commitment),\
@@ -110,10 +106,10 @@ def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_
     select ID, PREFIX, START_DATE, END_DATE, (case when coalesce((select julianday(START_DATE) \
         from final as t2 \
         where t1.ID = t2.ID \
-        and date(t1.END_DATE) <= date(t2.START_DATE) \
+        and date(t1.END_DATE) < date(t2.START_DATE) \
         order by date(t2.START_DATE) \
         limit 1 \
-    ) - julianday(END_DATE), ?) <= ? then 1 else 0 end) as LABEL \
+    ) - julianday(END_DATE), ?) BETWEEN 0 and ? then 1 else 0 end) as LABEL \
     from final as t1;"
 
     args = (default_max, time_period)
