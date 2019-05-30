@@ -6,28 +6,68 @@ import sqlite3
 import pandas as pd
 import numpy as np
 
-def add_gender_race_age_at_start_end():
+# priority 1
+def add_gender_race_age():
     query = """
-    SELECT ID, PREFIX, INMATE_GENDER_CODE, INMATE_RACE_CODE, START_DATE, END_DATE, INMATE_BIRTH_DATE,
-    CASE WHEN (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
-    THEN NULL
-    ELSE (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_START_DATE, 
-    CASE WHEN (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
-    THEN NULL
-    ELSE (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_END_DATE
-    FROM
-    INMT4AA1 JOIN labels
-    ON INMT4AA1.INMATE_DOC_NUMBER = labels.ID
+    WITH inmate_char as (
+        SELECT ID, PREFIX, INMATE_GENDER_CODE, INMATE_RACE_CODE, START_DATE, END_DATE, INMATE_BIRTH_DATE,
+        CASE WHEN (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
+        THEN NULL
+        ELSE (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_START_DATE, 
+        CASE WHEN (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
+        THEN NULL
+        ELSE (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_END_DATE
+        FROM
+        INMT4AA1 JOIN labels
+        ON INMT4AA1.INMATE_DOC_NUMBER = labels.ID
+    ),
+    age_first as(
+        SELECT ID, (julianday(min(START_DATE)) - julianday(min(INMATE_BIRTH_DATE)))/365.0 as AGE_FIRST_SENTENCE
+        FROM inmate_char
+        group by ID
+    ),
+    age_offense as (
+        SELECT inmate_char.ID as ID, inmate_char.PREFIX as PREFIX, OFNT3CE1.min_d as OFFENSE_START, OFNT3CE1.max_d as OFFENSE_END,
+        CASE WHEN (julianday(OFNT3CE1.min_d) - julianday(inmate_char.INMATE_BIRTH_DATE))/365.0 < 0
+        THEN NULL
+        ELSE (julianday(OFNT3CE1.min_d) - julianday(inmate_char.INMATE_BIRTH_DATE))/365.0 END as AGE_AT_OFFENSE_START,
+        CASE WHEN (julianday(OFNT3CE1.max_d) - julianday(inmate_char.INMATE_BIRTH_DATE))/365.0 < 0
+        THEN NULL
+        ELSE (julianday(OFNT3CE1.max_d) - julianday(inmate_char.INMATE_BIRTH_DATE))/365.0 END as AGE_AT_OFFENSE_END
+        FROM inmate_char natural join 
+        (select OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, min(DATE_OFFENSE_COMMITTEDBEGIN) as min_d, max(DATE_OFFENSE_COMMITTEDEND) as max_d
+        from OFNT3CE1
+        group by OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX) as OFNT3CE1
+
+    ),
+    prev as (
+        SELECT ID, PREFIX, ROW_NUMBER() OVER (PARTITION BY ID ORDER BY START_DATE) -1 as PREV_INCARC
+        FROM labels
+        ORDER BY START_DATE
+    )
+    SELECT * 
+    FROM (inmate_char natural join age_first) as t1 natural join 
+    (age_offense natural join prev) as t2
+    limit 5;
     """
     return query
 
 def add_num_sentences():
     query = """
-    SELECT OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, count(SENTENCE_COMPONENT_NUMBER) as NUM_SENTENCES
-    FROM OFNT3CE1 
-    GROUP BY OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
+    WITH sent as (
+        SELECT OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, count(SENTENCE_COMPONENT_NUMBER) as NUM_SENTENCES
+        FROM OFNT3CE1 
+        GROUP BY OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
+    )
+    SELECT *
+    FROM labels natural join sent
     """
     return query
+
+
+# priority 2
+
+
 
 # create missing binary variable
 # use for: race
