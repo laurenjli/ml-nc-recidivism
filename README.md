@@ -4,19 +4,19 @@ This repository contains files to run machine learning models that predict recid
 
 # Dependencies
 
---python 3.x
+*python 3.x
 
---pandas
+*pandas
 
---numpy
+*numpy
 
---sklearn
+*sklearn
 
---os
+*os
 
---sqlite3
+*sqlite3
 
---warnings
+*warnings
 
 
 # Data
