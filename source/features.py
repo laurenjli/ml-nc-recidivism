@@ -67,7 +67,7 @@ def add_all_features(database_path = DATABASE_FILENAME):
     insert_query = """
     SELECT * FROM
     labels natural join inmate_char
-    natureal join num_sent
+    natural join num_sent
     natural join totcntavg_sentences_allprior
     natural join totcntavg_sentences_last5yr
     natural join incarceration_len
@@ -77,6 +77,7 @@ def add_all_features(database_path = DATABASE_FILENAME):
     natural join countyconviction
     """
     create_ft_table(database_path, table_names, insert_query)
+
 
 ## Age, race, age
 
@@ -249,6 +250,20 @@ def add_minmaxterm(database_path=DATABASE_FILENAME):
     ''',)
     create_ft_table(database_path, table_names, query)
     print( '-- min max term added -- ')
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ## FEATURE CLEANING ##

@@ -8,6 +8,7 @@ The data we are using for this analysis was downloaded as of 26 April 2019
 import os
 import gettinglabels
 from create_sqldb import create_db
+import features as ft
 
 import sqlite3
 
@@ -22,25 +23,6 @@ def setup():
     Load datasets into inmates.db and generate new table with labels
     '''
     create_db(CSVFOLDER)
-
-
-def add_features(database_path=DATABASE_FILENAME):
-    '''
-    Creating a new table with features and labels
-    '''    
-    # First feature - how long they have been incarcerated in days
-    feature_query = (
-        """
-        WITH incarceration_len as(
-            SELECT ID, PREFIX, julianday(END_DATE)-julianday(START_DATE) as INCARCERATION_LEN_DAYS
-            FROM labels
-        )
-        SELECT * 
-        FROM labels natural join incarceration_len
-        """)
-
-    gettinglabels.query_db(feature_query, args=None, database_path=DATABASE_FILENAME, table_name='data', new_table=True)
-    print('feature created')
 
 
 def temporal_validation(csv_name, train_start_year, test_start_year, time_period=365.0):
@@ -87,6 +69,7 @@ def get_train_test_splits(train_start_year=1995, test_start_year=1997, time_peri
     gettinglabels.create_labels(DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')
     add_features()
     temporal_validation('test_'+ str(test_year), train_start_year=train_start_year, test_start_year=test_start_year, time_period=time_period)
+
 
 def full_traintest():
     time_period = 365.0
