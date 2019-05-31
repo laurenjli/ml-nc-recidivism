@@ -86,6 +86,7 @@ def add_all_features(database_path = DATABASE_FILENAME):
     This function creates a data table with all features
     '''
     add_gender_race_age()
+    add_ages()
     add_countyconviction()
     add_incarceration_lens()
     add_minmaxterm()
@@ -94,36 +95,60 @@ def add_all_features(database_path = DATABASE_FILENAME):
     #add them all into a sql table called "Data"
     table_names = ['data']
     insert_query = ("""
-    SELECT * FROM
-    labels LEFT JOIN
-    inmate_char
-    natural join num_sent
-    natural join totcntavg_sentences_allprior
-    natural join totcntavg_sentences_last5yr
-    (incarceration_len
-    LEFT JOIN
-    (totcntavg_incarceration_allprior 
-    LEFT JOIN 
-    (totcntavg_incarceration_last5yr
-    LEFT JOIN
-    (minmaxterm NATURAL JOIN countyconviction) as t1
-    ON totcntavg_incarceration_last5yr.ID = t1.ID AND totcntavg_incarceration_last5yr.PREFIX = t1.PREFIX) as t2
-    ON totcntavg_incarceration_allprior.ID = t2.ID AND totcntavg_incarceration_allprior.PREFIX = t2.PREFIX) as t3
-    ON incarceration_len.ID = t3.ID AND incarceration_len.PREFIX = t3.PREFIX) as t4
+    SELECT labels.ID, labels.PREFIX, labels.START_DATE, labels.END_DATE, labels.LABEL, 
+        t9.INMATE_RACE_CODE, 
+        t9.INMATE_GENDER_CODE, 
+        t9.AGE_AT_START_DATE, 
+        t9.AGE_AT_END_DATE,
+        t9.AGE_AT_OFFENSE_START,
+        t9.AGE_AT_OFFENSE_END,
+        t9.AGE_FIRST_SENTENCE,
+        t9.NUM_SENTENCES,
+        t9.TOTAL_SENT_ALLPRIOR, 
+        t9.NUM_PREV_SENT_ALLPRIOR,
+        t9.AVG_SENT_ALLPRIOR,
+        t9.TOTAL_SENT_LAST5YR,
+        t9.NUM_PREV_SENT_LAST5YR,
+        t9.AVG_SENT_LAST5YR,
+        t9.INCARCERATION_LEN_DAYS,
+        t9.TOTAL_INCARCERATION_ALLPRIOR,
+        t9.NUM_PREV_INCARCERATION_ALLPRIOR,
+        t9.AVG_INCARCERATION_ALLPRIOR,
+        t9.TOTAL_INCARCERATION_LAST5YR, 
+        t9.NUM_PREV_INCARCERATION_LAST5YR, 
+        t9.AVG_INCARCERATION_LAST5YR,
+        t9.MINMAXTERM, 
+        t9.COUNTY_CONVICTION
+    FROM
+    (labels LEFT JOIN
+        (inmate_char
+        LEFT JOIN
+            (age_features
+            LEFT JOIN
+                (num_sent
+                    LEFT JOIN
+                    (totcntavg_sentences_allprior
+                    LEFT JOIN
+                        (totcntavg_sentences_last5yr
+                        LEFT JOIN
+                            (incarceration_len
+                            LEFT JOIN
+                                (totcntavg_incarceration_allprior
+                                LEFT JOIN 
+                                    (totcntavg_incarceration_last5yr
+                                    LEFT JOIN
+                                        (minmaxterm NATURAL JOIN countyconviction) as t1
+                                    ON totcntavg_incarceration_last5yr.ID = t1.ID AND totcntavg_incarceration_last5yr.PREFIX = t1.PREFIX) as t2
+                                ON totcntavg_incarceration_allprior.ID = t2.ID AND totcntavg_incarceration_allprior.PREFIX = t2.PREFIX) as t3
+                            ON incarceration_len.ID = t3.ID AND incarceration_len.PREFIX = t3.PREFIX) as t4
+                        ON totcntavg_sentences_last5yr.ID = t4.ID AND totcntavg_sentences_last5yr.PREFIX = t4.PREFIX) as t5
+                    ON totcntavg_sentences_allprior.ID = t5.ID AND totcntavg_sentences_allprior.PREFIX = t5.PREFIX) as t6
+                ON num_sent.ID = t6.ID AND num_sent.PREFIX = t6.PREFIX) as t7
+            ON age_features.ID = t7.ID AND age_features.PREFIX = t7.PREFIX) as t8
+        ON inmate_char.ID = t8.ID AND inmate_char.PREFIX = t8.PREFIX) as t9
+    ON labels.ID = t9.ID AND labels.PREFIX = t9.PREFIX)
     """,)
     create_ft_table(database_path, table_names, insert_query)
-
-"""
-SELECT labels.ID, labels.PREFIX, t2.TOTAL_INCARCERATION_LAST5YR, t2.NUM_PREV_INCARCERATION_LAST5YR, t2.AVG_INCARCERATION_LAST5YR, 
-t2.MINMAXTERM,t2.COUNTY_CONVICTION
-FROM
-labels LEFT JOIN
-(totcntavg_incarceration_last5yr
-    LEFT JOIN 
-    (minmaxterm NATURAL JOIN countyconviction) as t1
-    ON totcntavg_incarceration_last5yr.ID = t1.ID AND totcntavg_incarceration_last5yr.PREFIX = t1.PREFIX) as t2
-ON labels.ID =t2.ID AND labels.PREFIX =t2.PREFIX limit 5;
-"""
 
 
 
@@ -145,21 +170,8 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
         FROM
         labels LEFT JOIN INMT4AA1
         ON INMT4AA1.INMATE_DOC_NUMBER = labels.ID
-    ),
-    prev as (
-        SELECT ID, PREFIX, ROW_NUMBER() OVER (PARTITION BY ID ORDER BY START_DATE) -1 as NUM_PREV_INCARC,
-        CASE WHEN ((ROW_NUMBER() OVER (PARTITION BY ID ORDER BY START_DATE) -1) >= 1)
-        THEN 1
-        ELSE 0 END AS PREV_INCAR_INDIC
-        FROM labels
-        ORDER BY START_DATE
     )
-    SELECT inmate_char.ID, inmate_char.PREFIX, inmate_char.INMATE_GENDER_CODE, inmate_char.INMATE_RACE_CODE, 
-    inmate_char.START_DATE, inmate_char.END_DATE, inmate_char.INMATE_BIRTH_DATE, inmate_char.AGE_AT_START_DATE, inmate_char.AGE_AT_END_DATE,
-    prev.NUM_PREV_INCARC, prev.PREV_INCAR_INDIC
-    FROM inmate_char LEFT JOIN prev
-    ON inmate_char.ID = prev.ID
-    AND inmate_char.PREFIX = prev.PREFIX
+    SELECT * from inmate_char
     """,)
     table_names = ['inmate_char']
     create_ft_table(database_path, table_names, query)

@@ -27,10 +27,10 @@ VARIABLES = {
                                           'AVG_INCARCERATION_ALLPRIOR', 'TOTAL_INCARCERATION_LAST5YR', 
                                           'AVG_INCARCERATION_LAST5YR']
                            },
-             'INDICATOR': {'incorrect': ['INCARCERATION_LEN_DAYS']
+             'INDICATOR': {'incorrect': ['INCARCERATION_LEN_DAYS'],
                            'missing': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
                                        'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END']
-                           }
+                           },
              'CONTINUOUS_VARS_MINMAX' : ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
                                          'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END', 'INCARCERATION_LEN_DAYS',
                                          'TOTAL_INCARCERATION_ALLPRIOR', 'NUM_PREV_INCARCERATION_ALLPRIOR', 
@@ -41,7 +41,7 @@ VARIABLES = {
                                          'AVG_SENT_LAST5YR'],
              'CATEGORICAL_VARS' : ['COUNTY_CONVICTION', 'MINMAXTERM', 'INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
                                    'PREFIX'],
-             'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE']
+             'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE'],
              'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL']
              }
 
