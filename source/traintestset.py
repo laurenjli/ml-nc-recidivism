@@ -22,6 +22,7 @@ def setup():
     '''
     Load datasets into inmates.db and generate new table with labels
     '''
+    print('creating DB')
     create_db(CSVFOLDER)
 
 
@@ -35,6 +36,7 @@ def temporal_validation(csv_name, train_start_year, test_start_year, time_period
         Train data - from train start year to (test start year - timeperiod)
         filter data for end year to be in test set
     '''
+    print('getting train test split {}'.format(test_start_year))
 
     train_query = """
     SELECT * FROM data
