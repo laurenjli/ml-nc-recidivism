@@ -11,33 +11,48 @@ DATA_DIR = CSVFOLDER + "traintest"
 RESULTS_DIR = "results"
 GRAPH_FOLDER = 'graphs'
 RESULTS_FILE = "results.csv"
+TRAIN_TEST_COL = 'year'
 SEED = 0
 
-#MODIFY THESE DICTIONARIES TO HAVE THE PARAMETERS NEEDED FOR CLEANING
+# done with race, gender, age, incarceration lens, county, minmaxterm, sentences
+
 VARIABLES = {
              'LABEL' : 'LABEL',
-             'TO_DISCRETIZE' : [{'NUM_SENTENCES': (3, ['low','medium','high'])}],
+#             'TO_DISCRETIZE' : [{'NUM_SENTENCES': (3, ['low','medium','high'])}],
              'DATES' : ['START_DATE', 'END_DATE'],
              'MISSING' : {'MISSING_CAT': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
                           'AGE': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
                                   'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END'],
-                          'IMPUTE_MEAN': ['INCARCERATION_LEN_DAYS','TOTAL_INCARCERATION_ALLPRIOR', 'NUM_PREV_INCARCERATION_ALLPRIOR', 
-                                          'AVG_INCARCERATION_ALLPRIOR','TOTAL_INCARCERATION_LAST5YR', 'NUM_PREV_INCARCERATION_LAST5YR', 
+                          'IMPUTE_MEAN': ['INCARCERATION_LEN_DAYS','TOTAL_INCARCERATION_ALLPRIOR', 
+                                          'AVG_INCARCERATION_ALLPRIOR', 'TOTAL_INCARCERATION_LAST5YR', 
                                           'AVG_INCARCERATION_LAST5YR']
                            },
-             'INDICATOR': {'INCARCERATION_LEN_DAYS': 'incorrect'}
-             'CONTINUOUS_VARS_MINMAX' : [],
-             'CATEGORICAL_VARS' : ['COUNTY_CONVICTION', 'MINMAXTERM', 'INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
-             'VARS_TO_EXCLUDE' : ['ID', 'LABEL']
+             'INDICATOR': {'incorrect': ['INCARCERATION_LEN_DAYS']
+                           'missing': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
+                                       'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END']
+                           }
+             'CONTINUOUS_VARS_MINMAX' : ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
+                                         'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END', 'INCARCERATION_LEN_DAYS',
+                                         'TOTAL_INCARCERATION_ALLPRIOR', 'NUM_PREV_INCARCERATION_ALLPRIOR', 
+                                         'AVG_INCARCERATION_ALLPRIOR','TOTAL_INCARCERATION_LAST5YR', 
+                                         'NUM_PREV_INCARCERATION_LAST5YR', 'AVG_INCARCERATION_LAST5YR',
+                                         'NUM_SENTENCES', 'TOTAL_SENT_ALLPRIOR', 'NUM_PREV_SENT_ALLPRIOR', 
+                                         'AVG_SENT_ALLPRIOR', 'TOTAL_SENT_LAST5YR', 'NUM_PREV_SENT_LAST5YR', 
+                                         'AVG_SENT_LAST5YR'],
+             'CATEGORICAL_VARS' : ['COUNTY_CONVICTION', 'MINMAXTERM', 'INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
+                                   'PREFIX'],
+             'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE']
+             'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL']
              }
+
 
 ## RUNNING THE MODELS
 GRIDSIZE = 'test'
-OUTFILE = "results_"+GRIDSIZE+".csv"
 MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
+
 
 def define_clfs_params(grid_size):
     """

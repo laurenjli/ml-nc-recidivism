@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-from pipeline import *
+import pipeline as pp
 import pandas as pd
 import traintestset as tt
 import config
@@ -16,7 +16,7 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
     
     
     year = period[0]
-    label = variables['LABEL']
+    label = config.VARIABLES['LABEL']
 
     while year <= period[1]:
         
@@ -30,8 +30,19 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
         df_train = get_csv(dir, train_set)
 
         for df in [df_test,  df_train]:
-            ##outliers
+            # changing data type
+            pp.to_date(df, VARIABLES['DATES'])
 
+            ## outliers
+
+            ## create indicators
+            for fill in VARIABLES['INDICATOR']:
+                attributes = VARIABLES['INDICATOR'][fill]
+                for attr in attribute:
+                    if attr == 'INCARCERATION_LEN_DAYS':
+                        df[attr] = df[attr].where(df[attr]>=0)   # replace neg values with nulls
+                    df = pp.create_indicator(df, attr, fill)
+            
             ## missing imputation
             for attribute in VARIABLES['MISSING']['AGE']:
                 df = pp.impute_with_2cols(df, year_col, pen_col, attribute)
@@ -42,13 +53,7 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             for attribute in VARIABLES['MISSING']['IMPUTE_MEAN']:
                 df = pp.na_fill_col(df, attribute)
 
-            for attribute in VARIABLES['INDICATOR']:
-                if attribute == 'INCARCERATION_LEN_DAYS':
-                    df[col] = df[col].where(df[col]>=0)   # replace neg values with nulls
-                df = pp.create_indicator(df, attribute, VARIABLES['INDICATOR'][attribute])
-
             ## discretization
-
 
             ## dummy
             for attribute in VARIABLES['CATEGORICAL_VARS']:
@@ -58,7 +63,6 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
 
             pp.categorical_to_dummy(df, VARIABLES['CATEGORICAL_VARS'])
 
-
         #scaling continuous variable
         scaler = MinMaxScaler()
         for attribute in VARIABLES['CONTINUOUS_VARS_MINMAX']:
@@ -66,9 +70,6 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             s = scaler.fit(data_for_fitting)
             df_train[attribute] = scaler.transform(df_train[attribute].values.reshape(-1, 1))
             df_test[attribute] = scaler.transform(df_test[attribute].values.reshape(-1, 1))
-                        
-
-
 
 
         attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
@@ -77,14 +78,13 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
                 df_test.loc[:,c] = 0
 
         results = classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst)
-        results['year'] = year
+        results[config.TRAIN_TEST_COL] = year
 
         if year == first_year:
             results.to_csv(os.path.join(results_dir, results_file), index=False)
         else:
             with open(os.path.join(results_dir, results_file), 'a') as f:
                 results.to_csv(f, header=False, index=False) 
-
 
         year += 1
 
