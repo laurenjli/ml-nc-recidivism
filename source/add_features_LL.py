@@ -8,6 +8,7 @@ import numpy as np
 import features as ft
 import gettinglabels
 
+DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
 # priority 1
 
 

@@ -3,16 +3,29 @@
 
 from pipeline import *
 import pandas as pd
-import warnings
 import traintestset as tt
-warnings.simplefilter(action='ignore', category=FutureWarning)
 
 
 #Define constants
 DATA_DIR = "../ncdoc_data/data/preprocessed/traintest"
+RESULTS_DIR = "results"
 RESULTS_FILE = "results.csv"
-LABEL = "LABEL"
-SEED = 0
+
+#MODIFY THESE DICTIONARIES TO HAVE THE PARAMETERS NEEDED FOR CLEANING
+CLEAN_PARAMETERS = {'years_range': [""], 'sd_threshold': 3,\
+                    'how_fill_nan':'median'} #we might want the how_fill_nan to be a dictionary that changes for each variable.  
+
+VARIABLES = {
+             'LABEL' : 'LABEL',
+             'TEMPORAL_VAL_VAR' : '',
+             'DATE_OUTCOME' : '',
+             'IDENTIFICATION_VARS' : [''],
+             'FLAG_VARS' : [''],
+             'CONTINUOUS_VARS' : [''],
+             'CATEGORICAL_VARS' : [''],
+             'VARS_TO_DROP' : [''],
+            }
+
 
 #For this progress report I only ran the following small grid:
 CUSTOM_GRID = {
@@ -39,46 +52,28 @@ CUSTOM_GRID = {
 
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'], [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
-MODELS = ['LR', 'DT','KNN', 'RF', 'AB', 'BA']
+MODELS = ['LR', 'SVM', 'DT','KNN', 'RF', 'AB', 'BA']
+SEED = 0
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
-def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2017):
-    # sample code 
-    if not os.path.exists(csvfiles):
-        tt.full_traintest()
+def main(data_dir=DATA_DIR, results_dir=RESULTS_DIR, results_file=RESULTS_FILE, 
+         variables=VARIABLES, clean_parameters=CLEAN_PARAMETERS, period=[1997, 2017]):
     
+    year = period[0]
+    label = variables['LABEL']
 
-    year = first_year
+    while year <= period[1]:
+        
+        test_csv = os.path.join(data_dir, "test_{}_test.csv".format(year))
+        train_csv = os.path.join(data_dir, "test_{}_train.csv".format(year))
+        
+        if not os.path.exists(test_csv) and os.path.exists(train_csv):
+            tt.full_traintest() 
 
-    while year <= last_year:
-        
-        test_set = "test_{}_test.csv".format(year)
-        train_set = "test_{}_train.csv".format(year)
-        
         df_test = get_csv(dir, test_set)
         df_train = get_csv(dir, train_set)
-
-        fill_nan(df_test, ['INCARCERATION_LEN_DAYS', 'LABEL'], how='median')
-        fill_nan(df_train, ['INCARCERATION_LEN_DAYS', 'LABEL'], how='median')
-
-#        df_test = remove_outliers(df_test, ['INCARCERATION_LEN_DAYS'], sd_threshold=3)
-#        df_train = remove_outliers(df_train, ['INCARCERATION_LEN_DAYS'], sd_threshold=3)
-
-        df_test = discretize_variable(df_test, ["INCARCERATION_LEN_DAYS"])
-        df_train = discretize_variable(df_train, ["INCARCERATION_LEN_DAYS"])
-
-        '''
-        #df_test = categorical_to_dummy(df_test, ["PREFIX"])
-        #df_train = categorical_to_dummy(df_train, ["PREFIX"])
-        
-        attributes_lst = list(df_test.columns)
-        attributes_lst.remove("END_DATE")
-        attributes_lst.remove("START_DATE")
-        attributes_lst.remove("ID")
-        attributes_lst.remove("PREFIX")
-        attributes_lst.remove("INCARCERATION_LEN_DAYS")
-        attributes_lst.remove("LABEL")
-        '''
+                            
+        #DATA CLEANING HERE
 
         attributes_lst = ['INCARCERATION_LEN_DAYScat']
 
@@ -86,11 +81,12 @@ def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1
         results['year'] = year
 
         if year == first_year:
-            results.to_csv(results_file_name, index=False)
+            results.to_csv(os.path.join(results_dir, results_file), index=False)
         else:
-            with open(results_file_name, 'a') as f:
+            with open(os.path.join(results_dir, results_file), 'a') as f:
                 results.to_csv(f, header=False, index=False) 
-        
+
+
         year += 1
 
 if __name__ == "__main__":
