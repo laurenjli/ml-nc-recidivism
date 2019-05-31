@@ -128,7 +128,7 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
 
 ## Number of sentences
 
-def add_num_sentences():
+def add_num_sentences(database_path = DATABASE_FILENAME):
     query = """
     WITH sent as (
         SELECT OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, count(SENTENCE_COMPONENT_NUMBER) as NUM_SENTENCES

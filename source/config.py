@@ -4,7 +4,10 @@ Configuration File
 
 ## DATA FILE / LABEL
 #Define constants
-DATA_DIR = "../ncdoc_data/data/preprocessed/traintest"
+CSVFOLDER="../ncdoc_data/data/preprocessed/"
+DATABASE_FILENAME=CSVFOLDER + "inmates.db"
+DATA_DIR = CSVFOLDER + "traintest"
+
 RESULTS_DIR = "results"
 GRAPH_FOLDER = 'graphs'
 RESULTS_FILE = "results.csv"

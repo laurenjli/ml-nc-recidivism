@@ -9,21 +9,19 @@ import os
 import gettinglabels
 from create_sqldb import create_db
 import features as ft
+import config
 
 import sqlite3
 
 
 # Edit the following directory based on your data locations
-CSVFOLDER="../ncdoc_data/data/preprocessed/"
-DATABASE_FILENAME=CSVFOLDER + "inmates.db"
-
 
 def setup():
     '''
     Load datasets into inmates.db and generate new table with labels
     '''
     print('creating DB')
-    create_db(CSVFOLDER)
+    create_db(config.CSVFOLDER)
 
 
 def temporal_validation(csv_name, train_start_year, test_start_year, time_period=365.0):
@@ -45,9 +43,9 @@ def temporal_validation(csv_name, train_start_year, test_start_year, time_period
     """
     train_args = (str(train_start_year)+'-01-01', str(test_start_year)+'-01-01', time_period)
 
-    gettinglabels.query_db(train_query, train_args, DATABASE_FILENAME, 
+    gettinglabels.query_db(train_query, train_args, config.DATABASE_FILENAME, 
                            table_name='traindata', new_table=True, 
-                           csv_filename=CSVFOLDER + 'traintest/' + csv_name + '_train.csv')
+                           csv_filename=config.DATA_DIR + csv_name + '_train.csv')
     print("created {} train set".format(csv_name))
 
     test_query = """
@@ -56,9 +54,9 @@ def temporal_validation(csv_name, train_start_year, test_start_year, time_period
     """
     test_args = (str(test_start_year)+'%',)
         
-    gettinglabels.query_db(test_query, test_args, DATABASE_FILENAME, 
+    gettinglabels.query_db(test_query, test_args, config.DATABASE_FILENAME, 
                            table_name='testdata', new_table=True, 
-                           csv_filename=CSVFOLDER + 'traintest/' + csv_name+ '_test.csv')
+                           csv_filename=config.DATA_DIR + csv_name+ '_test.csv')
     print("created {} test set".format(csv_name))
 
 
@@ -68,7 +66,7 @@ def get_train_test_splits(train_start_year=1995, test_start_year=1997, time_peri
     1) traindata table and test data table in db
     2) write out as csv files in data/preprocessed/traintest/ folder
     '''
-    gettinglabels.create_labels(DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')
+    gettinglabels.create_labels(config.DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')
     add_features()
     temporal_validation('test_'+ str(test_year), train_start_year=train_start_year, test_start_year=test_start_year, time_period=time_period)
 
@@ -76,10 +74,10 @@ def get_train_test_splits(train_start_year=1995, test_start_year=1997, time_peri
 def full_traintest(time_period=365.0):
 
     # check if full database exists
-    if not os.path.exists(DATABASE_FILENAME):
+    if not os.path.exists(config.DATABASE_FILENAME):
         setup()  # To load database of data tables
 
-    gettinglabels.create_labels(DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')  # Get labels
+    gettinglabels.create_labels(config.DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')  # Get labels
     ft.add_all_features() # Create new table data for features and data
 
     test_year=1997
