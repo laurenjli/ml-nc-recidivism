@@ -45,18 +45,20 @@ def get_csv(data_dir, file_name):
 
 def remove_outliers(df, attribute_lst, sd_threshold=3):
     '''
-    Takes a dataframe and number of standard deviations to be considered 
+    Takes a dataframe and number of standard deviations to be considered
     as outlier and returns a df without the observation that have one or
     or more outliers in the attributes selected.
     input:
-        df: pandas data frame
-        attributes_lst: list of attributes names
-        sd_threshold: standard deviations
+    df: pandas data frame
+    attributes_lst: list of attributes names
+    sd_threshold: standard deviations
     output:
-        the new datafrane without outliers
-    '''   
-    
-    return(df[(np.abs(stats.zscore(df[attribute_lst])) < sd_threshold).all(axis=1)])
+    the new datafrane without outliers
+    '''
+    zscore = lambda x: (x - x.mean())/x.std(ddof=0)
+    for attribute in attribute_lst:
+        df[attribute] = df[attribute][(np.abs(zscore(df[attribute])) < sd_threshold)]
+    return df
 
 
 def fill_nan(df, attributes_lst, how='mean'):
@@ -308,8 +310,8 @@ def pred_at_level(y_true, y_scores, level):
     idx = np.argsort(np.array(y_scores))[::-1]
     y_scores, y_true = np.array(y_scores)[idx], np.array(y_true)[idx]
     cutoff_index = int(len(y_scores) * (level / 100.0))
-    preds_at_level = [1 if x < cutoff_index else 0 for x in range(len(y_scores))]
-    return preds_at_level
+    y_preds_at_level = [1 if x < cutoff_index else 0 for x in range(len(y_scores))]
+    return y_true, y_preds_at_level
 
 
 metrics = { 'accuracy':accuracy_at_threshold,
@@ -349,21 +351,14 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             clfr = classifier.set_params(**parameters)
             clfr.fit(X_train, y_train)
             eval_result = [model, classifier, parameters]
-            if model != 'SVM':
-                y_pred_prob = clfr.predict_proba(X_test)[:,1]
-                #plot_precision_recall_n(y_test, y_pred_prob, model+'.png')
-                if eval_metrics:
-                    eval_result += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]
-                if eval_metrics_by_level[0]:
-                    for level in eval_metrics_by_level[1]:
-                        y_pred = pred_at_level(y_test, y_pred_prob, level)
-                        eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]] 
-            else:
-                y_pred = clfr.predict(X_test)
-                if eval_metrics:
-                    eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics]
-                if eval_metrics_by_level[0]:
-                    eval_result += ([metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]] * len(eval_metrics_by_level[1]))
+            y_pred_prob = clfr.predict_proba(X_test)[:,1]
+            #plot_precision_recall_n(y_test, y_pred_prob, model+'.png')
+            if eval_metrics:
+                eval_result += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]
+            if eval_metrics_by_level[0]:
+                for level in eval_metrics_by_level[1]:
+                   y_test, y_pred = pred_at_level(y_test, y_pred_prob, level)
+                   eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]]
              
             results.loc[len(results)] = eval_result
     return results
