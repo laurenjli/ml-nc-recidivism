@@ -41,11 +41,11 @@ EVAL_METRICS = ['auc']
 MODELS = ['LR', 'DT','KNN', 'RF', 'AB', 'BA']
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
-def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2018):
+def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2017):
     
     year = first_year
 
-    while year < last_year + 1:
+    while year <= last_year:
         
         test_set = "test_{}_test.csv".format(year)
         train_set = "test_{}_train.csv".format(year)
