@@ -48,7 +48,36 @@ def create_index_incarcerationlen(database_path=DATABASE_FILENAME):
 
     build_index(database_path, create_index)
 
+def create_labels_indices(database_path=DATABASE_FILENAME):
+    create_index = (""" 
+    CREATE INDEX IF NOT EXISTS
+    idx_start
+    ON labels(START_DATE)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS
+    idx_end
+    ON labels(END_DATE)
+    """)
+    build_index(database_path, create_index)
 
+def create_OFNT3CE1_indices(database_path=DATABASE_FILENAME):
+    create_index = (""" 
+    CREATE INDEX IF NOT EXISTS
+    idx_offense_start
+    ON OFNT3CE1(DATE_OFFENSE_COMMITTEDBEGIN)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS
+    idx_offense_end
+    ON OFNT3CE1(DATE_OFFENSE_COMMITTEDEND)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS
+    idx_OFNT3CE1_id
+    ON OFNT3CE1(OFFENDER_NC_DOC_ID_NUMBER)
+    """)
+    build_index(database_path, create_index)
 
 ## ADD FEATURES ##
 
@@ -64,27 +93,49 @@ def add_all_features(database_path = DATABASE_FILENAME):
 
     #add them all into a sql table called "Data"
     table_names = ['data']
-    insert_query = """
+    insert_query = ("""
     SELECT * FROM
-    labels natural join inmate_char
+    labels LEFT JOIN
+    inmate_char
     natural join num_sent
     natural join totcntavg_sentences_allprior
     natural join totcntavg_sentences_last5yr
-    natural join incarceration_len
-    natural join totcntavg_incarceration_allprior 
-    natural join totcntavg_incarceration_last5yr
-    natural join minmaxterm
-    natural join countyconviction
-    """
+    (incarceration_len
+    LEFT JOIN
+    (totcntavg_incarceration_allprior 
+    LEFT JOIN 
+    (totcntavg_incarceration_last5yr
+    LEFT JOIN
+    (minmaxterm NATURAL JOIN countyconviction) as t1
+    ON totcntavg_incarceration_last5yr.ID = t1.ID AND totcntavg_incarceration_last5yr.PREFIX = t1.PREFIX) as t2
+    ON totcntavg_incarceration_allprior.ID = t2.ID AND totcntavg_incarceration_allprior.PREFIX = t2.PREFIX) as t3
+    ON incarceration_len.ID = t3.ID AND incarceration_len.PREFIX = t3.PREFIX) as t4
+    """,)
     create_ft_table(database_path, table_names, insert_query)
+
+"""
+SELECT labels.ID, labels.PREFIX, t2.TOTAL_INCARCERATION_LAST5YR, t2.NUM_PREV_INCARCERATION_LAST5YR, t2.AVG_INCARCERATION_LAST5YR, 
+t2.MINMAXTERM,t2.COUNTY_CONVICTION
+FROM
+labels LEFT JOIN
+(totcntavg_incarceration_last5yr
+    LEFT JOIN 
+    (minmaxterm NATURAL JOIN countyconviction) as t1
+    ON totcntavg_incarceration_last5yr.ID = t1.ID AND totcntavg_incarceration_last5yr.PREFIX = t1.PREFIX) as t2
+ON labels.ID =t2.ID AND labels.PREFIX =t2.PREFIX limit 5;
+"""
+
 
 
 ## Age, race, age
 
 def add_gender_race_age(database_path=DATABASE_FILENAME):
-    query = """
+    create_labels_indices()
+
+    query = (
+    """
     WITH inmate_char as (
-        SELECT ID, PREFIX, INMATE_GENDER_CODE, INMATE_RACE_CODE, START_DATE, END_DATE, INMATE_BIRTH_DATE,
+        SELECT labels.ID, PREFIX, INMATE_GENDER_CODE, INMATE_RACE_CODE, START_DATE, END_DATE, INMATE_BIRTH_DATE,
         CASE WHEN (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
         THEN NULL
         ELSE (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_START_DATE, 
@@ -92,16 +143,50 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
         THEN NULL
         ELSE (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_END_DATE
         FROM
-        INMT4AA1 JOIN labels
+        labels LEFT JOIN INMT4AA1
         ON INMT4AA1.INMATE_DOC_NUMBER = labels.ID
     ),
-    age_first as(
-        SELECT ID, (julianday(min(START_DATE)) - julianday(min(INMATE_BIRTH_DATE)))/365.0 as AGE_FIRST_SENTENCE
+    prev as (
+        SELECT ID, PREFIX, ROW_NUMBER() OVER (PARTITION BY ID ORDER BY START_DATE) -1 as NUM_PREV_INCARC,
+        CASE WHEN ((ROW_NUMBER() OVER (PARTITION BY ID ORDER BY START_DATE) -1) >= 1)
+        THEN 1
+        ELSE 0 END AS PREV_INCAR_INDIC
+        FROM labels
+        ORDER BY START_DATE
+    )
+    SELECT inmate_char.ID, inmate_char.PREFIX, inmate_char.INMATE_GENDER_CODE, inmate_char.INMATE_RACE_CODE, 
+    inmate_char.START_DATE, inmate_char.END_DATE, inmate_char.INMATE_BIRTH_DATE, inmate_char.AGE_AT_START_DATE, inmate_char.AGE_AT_END_DATE,
+    prev.NUM_PREV_INCARC, prev.PREV_INCAR_INDIC
+    FROM inmate_char LEFT JOIN prev
+    ON inmate_char.ID = prev.ID
+    AND inmate_char.PREFIX = prev.PREFIX
+    """,)
+    table_names = ['inmate_char']
+    create_ft_table(database_path, table_names, query)
+
+    indexq = (
+    """
+    CREATE INDEX IF NOT EXISTS
+    idx_birth
+    ON inmate_char(INMATE_BIRTH_DATE)
+    """,)
+    build_index(database_path=DATABASE_FILENAME, query = indexq)
+
+# More age features
+
+def add_ages(database_path=DATABASE_FILENAME):
+    create_OFNT3CE1_indices()
+    query = ("""
+    WITH age_first as(
+        SELECT ID, 
+        CASE WHEN (julianday(min(START_DATE)) - julianday(min(INMATE_BIRTH_DATE)))/365.0 < 0 
+        THEN NULL
+        ELSE (julianday(min(START_DATE)) - julianday(min(INMATE_BIRTH_DATE)))/365.0 END as AGE_FIRST_SENTENCE
         FROM inmate_char
         group by ID
     ),
     age_offense as (
-        SELECT inmate_char.ID as ID, inmate_char.PREFIX as PREFIX, OFNT3CE1.min_d as OFFENSE_START, OFNT3CE1.max_d as OFFENSE_END,
+        SELECT inmate_char.ID, inmate_char.PREFIX, OFNT3CE1.min_d as OFFENSE_START, OFNT3CE1.max_d as OFFENSE_END,
         CASE WHEN (julianday(OFNT3CE1.min_d) - julianday(inmate_char.INMATE_BIRTH_DATE))/365.0 < 0
         THEN NULL
         ELSE (julianday(OFNT3CE1.min_d) - julianday(inmate_char.INMATE_BIRTH_DATE))/365.0 END as AGE_AT_OFFENSE_START,
@@ -112,32 +197,29 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
         (select OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, min(DATE_OFFENSE_COMMITTEDBEGIN) as min_d, max(DATE_OFFENSE_COMMITTEDEND) as max_d
         from OFNT3CE1
         group by OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX) as OFNT3CE1
-
-    ),
-    prev as (
-        SELECT ID, PREFIX, ROW_NUMBER() OVER (PARTITION BY ID ORDER BY START_DATE) -1 as PREV_INCARC
-        FROM labels
-        ORDER BY START_DATE
     )
-    SELECT * 
-    FROM (inmate_char natural join age_first) as t1 natural join 
-    (age_offense natural join prev) as t2
-    """
-    table_names = ['inmate_char']
+    SELECT age_offense.ID, age_offense.PREFIX, age_offense.OFFENSE_START, age_offense.OFFENSE_END, age_offense.AGE_AT_OFFENSE_START,
+    age_offense.AGE_AT_OFFENSE_END, age_first.AGE_FIRST_SENTENCE  FROM
+    age_offense LEFT JOIN age_first
+    ON age_offense.ID = age_first.ID
+    """,)
+    table_names = ['age_features']
     create_ft_table(database_path, table_names, query)
 
 ## Number of sentences
 
-def add_num_sentences(database_path = DATABASE_FILENAME):
-    query = """
+def add_num_sentences(database_path=DATABASE_FILENAME):
+    query = ("""
     WITH sent as (
         SELECT OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, count(SENTENCE_COMPONENT_NUMBER) as NUM_SENTENCES
         FROM OFNT3CE1 
         GROUP BY OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
     )
-    SELECT *
-    FROM labels natural join sent
-    """
+    SELECT labels.ID, labels.PREFIX, labels.START_DATE, labels.END_DATE, sent.NUM_SENTENCES 
+    FROM labels LEFT JOIN sent
+    ON labels.ID = sent.ID
+    AND labels.PREFIX = sent.PREFIX
+    """,)
     table_names = ['num_sent']
     create_ft_table(database_path, table_names, query)
 
@@ -160,7 +242,8 @@ def add_num_sentences(database_path = DATABASE_FILENAME):
         count(*) as NUM_PREV_SENT_LAST5YR,
         sum(b.NUM_SENTENCES)/count(*) as AVG_SENT_LAST5YR  
         FROM num_sent as a join num_sent as b on a.ID=b.ID 
-        WHERE julianday(b.END_DATE) >= (julianday(a.END_DATE) - 1825) and julianday(b.END_DATE) <= (julianday(a.END_DATE)
+        WHERE julianday(b.END_DATE) >= (julianday(a.END_DATE) - 1825) 
+        AND julianday(b.END_DATE) <= julianday(a.END_DATE)
         GROUP BY a.ID, a.PREFIX, a.START_DATE, a.END_DATE
         '''
         )
@@ -213,7 +296,6 @@ def add_incarceration_lens(database_path=DATABASE_FILENAME):
         )
 
     create_ft_table(database_path, table_names, query)
-    print('-- incarceration len features completed --')
 
 ## County of convictions
 def add_countyconviction(database_path=DATABASE_FILENAME):
@@ -230,7 +312,6 @@ def add_countyconviction(database_path=DATABASE_FILENAME):
             group by OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
             ''',)
     create_ft_table(database_path, table_names, query)
-    print(' -- county of conviction added --')
 
 ## Min/max terms
 
@@ -248,19 +329,6 @@ def add_minmaxterm(database_path=DATABASE_FILENAME):
     group by OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
     ''',)
     create_ft_table(database_path, table_names, query)
-    print( '-- min max term added -- ')
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -303,7 +371,7 @@ def impute_minmaxterm(df):
     df = create_dummies(df, 'MINMAXTERM')
     return df
 
-def impute_race(df, racecol = 'INMATE_RACE_CODE', fill_method = 'Unknown'):
+def impute_race(df, racecol = 'INMATE_RACE_CODE', fill_method = 'Missing'):
     '''
     This function creates a missing binary column and imputes race
 
@@ -313,7 +381,7 @@ def impute_race(df, racecol = 'INMATE_RACE_CODE', fill_method = 'Unknown'):
     returns dataframe with imputed data
     '''
     # create binary missing column
-    df = pp.missing_col(df, racecol)
+    # df = pp.missing_col(df, racecol)
     # copy dataframe to impute values then reinsert into df
     cp = df.copy()
     cp.loc[cp[racecol].isna(), racecol] = fill_method
@@ -349,3 +417,5 @@ def impute_age(df, year_col, pen_col, target_col):
     df[target_col] = cp[target_col]
     return df
 
+if __name__ == '__main__':
+    add_all_features()

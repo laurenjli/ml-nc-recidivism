@@ -11,11 +11,44 @@ import gettinglabels
 DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
 # priority 1
 
+def create_labels_indices(database_path=DATABASE_FILENAME):
+    create_index = (""" 
+    CREATE INDEX IF NOT EXISTS
+    idx_start
+    ON labels(START_DATE)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS
+    idx_end
+    ON labels(END_DATE)
+    """)
+    ft.build_index(database_path, create_index)
+
+def create_OFNT3CE1_indices(database_path=DATABASE_FILENAME):
+    create_index = (""" 
+    CREATE INDEX IF NOT EXISTS
+    idx_offense_start
+    ON OFNT3CE1(DATE_OFFENSE_COMMITTEDBEGIN)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS
+    idx_offense_end
+    ON OFNT3CE1(DATE_OFFENSE_COMMITTEDEND)
+    """,
+    """
+    CREATE INDEX IF NOT EXISTS
+    idx_OFNT3CE1_id
+    ON OFNT3CE1(OFFENDER_NC_DOC_ID_NUMBER)
+    """)
+    ft.build_index(database_path, create_index)
 
 def add_gender_race_age(database_path=DATABASE_FILENAME):
-    query = """
+    create_labels_indices()
+
+    query = (
+    """
     WITH inmate_char as (
-        SELECT ID, PREFIX, INMATE_GENDER_CODE, INMATE_RACE_CODE, START_DATE, END_DATE, INMATE_BIRTH_DATE,
+        SELECT labels.ID, PREFIX, INMATE_GENDER_CODE, INMATE_RACE_CODE, START_DATE, END_DATE, INMATE_BIRTH_DATE,
         CASE WHEN (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
         THEN NULL
         ELSE (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_START_DATE, 
@@ -23,16 +56,46 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
         THEN NULL
         ELSE (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_END_DATE
         FROM
-        INMT4AA1 JOIN labels
+        labels LEFT JOIN INMT4AA1
         ON INMT4AA1.INMATE_DOC_NUMBER = labels.ID
     ),
-    age_first as(
-        SELECT ID, (julianday(min(START_DATE)) - julianday(min(INMATE_BIRTH_DATE)))/365.0 as AGE_FIRST_SENTENCE
+    prev as (
+        SELECT ID, PREFIX, ROW_NUMBER() OVER (PARTITION BY ID ORDER BY START_DATE) -1 as NUM_PREV_INCARC,
+        CASE WHEN ((ROW_NUMBER() OVER (PARTITION BY ID ORDER BY START_DATE) -1) >= 1)
+        THEN 1
+        ELSE 0 END AS PREV_INCAR_INDIC
+        FROM labels
+        ORDER BY START_DATE
+    )
+    SELECT *
+    FROM inmate_char LEFT JOIN prev
+    ON inmate_char.ID = prev.ID
+    AND inmate_char.PREFIX = prev.PREFIX
+    """,)
+    table_names = ['inmate_char']
+    ft.create_ft_table(database_path, table_names, query)
+
+    indexq = (
+    """
+    CREATE INDEX IF NOT EXISTS
+    idx_birth
+    ON inmate_char(INMATE_BIRTH_DATE)
+    """,)
+    ft.build_index(database_path=DATABASE_FILENAME, query = indexq)
+
+def add_ages(database_path=DATABASE_FILENAME):
+    create_OFNT3CE1_indices()
+    query = ("""
+    WITH age_first as(
+        SELECT ID, 
+        CASE WHEN (julianday(min(START_DATE)) - julianday(min(INMATE_BIRTH_DATE)))/365.0 < 0 
+        THEN NULL
+        ELSE (julianday(min(START_DATE)) - julianday(min(INMATE_BIRTH_DATE)))/365.0 END as AGE_FIRST_SENTENCE
         FROM inmate_char
         group by ID
     ),
     age_offense as (
-        SELECT inmate_char.ID as ID, inmate_char.PREFIX as PREFIX, OFNT3CE1.min_d as OFFENSE_START, OFNT3CE1.max_d as OFFENSE_END,
+        SELECT inmate_char.ID, inmate_char.PREFIX, OFNT3CE1.min_d as OFFENSE_START, OFNT3CE1.max_d as OFFENSE_END,
         CASE WHEN (julianday(OFNT3CE1.min_d) - julianday(inmate_char.INMATE_BIRTH_DATE))/365.0 < 0
         THEN NULL
         ELSE (julianday(OFNT3CE1.min_d) - julianday(inmate_char.INMATE_BIRTH_DATE))/365.0 END as AGE_AT_OFFENSE_START,
@@ -43,32 +106,27 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
         (select OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, min(DATE_OFFENSE_COMMITTEDBEGIN) as min_d, max(DATE_OFFENSE_COMMITTEDEND) as max_d
         from OFNT3CE1
         group by OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX) as OFNT3CE1
-
-    ),
-    prev as (
-        SELECT ID, PREFIX, ROW_NUMBER() OVER (PARTITION BY ID ORDER BY START_DATE) -1 as PREV_INCARC
-        FROM labels
-        ORDER BY START_DATE
     )
-    SELECT * 
-    FROM (inmate_char natural join age_first) as t1 natural join 
-    (age_offense natural join prev) as t2
-    limit 5;
-    """
-    table_names = ['inmate_char']
+    SELECT age_offense.ID, age_offense.PREFIX, age_offense.OFFENSE_START, age_offense.OFFENSE_END, age_offense.AGE_AT_OFFENSE_START,
+    age_offense.AGE_AT_OFFENSE_END, age_first.AGE_FIRST_SENTENCE  FROM
+    age_offense LEFT JOIN age_first
+    ON age_offense.ID = age_first.ID
+    """,)
+    table_names = ['age_features']
     ft.create_ft_table(database_path, table_names, query)
 
-
-def add_num_sentences():
-    query = """
+def add_num_sentences(database_path=DATABASE_FILENAME):
+    query = ("""
     WITH sent as (
         SELECT OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, count(SENTENCE_COMPONENT_NUMBER) as NUM_SENTENCES
         FROM OFNT3CE1 
         GROUP BY OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
     )
-    SELECT *
-    FROM labels natural join sent
-    """
+    SELECT labels.ID, labels.PREFIX, labels.START_DATE, labels.END_DATE, sent.NUM_SENTENCES 
+    FROM labels LEFT JOIN sent
+    ON labels.ID = sent.ID
+    AND labels.PREFIX = sent.PREFIX
+    """,)
     table_names = ['num_sent']
     ft.create_ft_table(database_path, table_names, query)
 
@@ -91,7 +149,8 @@ def add_num_sentences():
         count(*) as NUM_PREV_SENT_LAST5YR,
         sum(b.NUM_SENTENCES)/count(*) as AVG_SENT_LAST5YR  
         FROM num_sent as a join num_sent as b on a.ID=b.ID 
-        WHERE julianday(b.END_DATE) >= (julianday(a.END_DATE) - 1825) and julianday(b.END_DATE) <= (julianday(a.END_DATE)
+        WHERE julianday(b.END_DATE) >= (julianday(a.END_DATE) - 1825) 
+        AND julianday(b.END_DATE) <= julianday(a.END_DATE)
         GROUP BY a.ID, a.PREFIX, a.START_DATE, a.END_DATE
         '''
         )
@@ -183,16 +242,17 @@ def impute_age(df, year_col, pen_col, target_col):
     return df
 
 if __name__ == '__main__':
+    add_num_sentences()
     #testing impute_age()
-    x = [{'year': 1995, 'penalty': 1, 'age': 25, 'race': 'Black'},
-        {'year': 1995, 'penalty': 1, 'age': 27, 'race': 'Asian'},
-        {'year': 1995, 'penalty': 1, 'age': None, 'race': 'White'},
-        {'year': 1997, 'penalty': 2, 'age': 25, 'race': None},
-        {'year': 1997, 'penalty': 2, 'age': 30, 'race': None},
-        {'year': 1997, 'penalty': 2, 'age': None, 'race': 'Indian'}]
-    y = pd.DataFrame(x)
-    z=impute_age(y, 'year', 'penalty', 'age')
-    print(z)
+    # x = [{'year': 1995, 'penalty': 1, 'age': 25, 'race': 'Black'},
+    #     {'year': 1995, 'penalty': 1, 'age': 27, 'race': 'Asian'},
+    #     {'year': 1995, 'penalty': 1, 'age': None, 'race': 'White'},
+    #     {'year': 1997, 'penalty': 2, 'age': 25, 'race': None},
+    #     {'year': 1997, 'penalty': 2, 'age': 30, 'race': None},
+    #     {'year': 1997, 'penalty': 2, 'age': None, 'race': 'Indian'}]
+    # y = pd.DataFrame(x)
+    # z=impute_age(y, 'year', 'penalty', 'age')
+    # print(z)
 
-    a = impute_race(z, 'race')
-    print(a)
+    # a = impute_race(z, 'race')
+    # print(a)
