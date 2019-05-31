@@ -77,7 +77,7 @@ def add_num_sentences():
     FROM labels natural join sent
     """
     table_names = ['num_sent']
-    add_features(database_path, table_names, query)
+    ft.add_features(database_path, table_names, query)
 
     table_names2 = ['totcntavg_sentences_allprior', 'totcntavg_sentences_last5yr']
 
@@ -103,7 +103,7 @@ def add_num_sentences():
         '''
         )
 
-    add_features(database_path, table_names2, query2)
+    ft.add_features(database_path, table_names2, query2)
 
 # priority 2
 

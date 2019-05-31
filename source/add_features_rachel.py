@@ -153,7 +153,7 @@ def get_data_table(filename):
 
 ## DATA CLEANING IN PANDAS
 
-def clean_negative_incarceration_len(df):
+def impute_negative_incarceration_len(df):
     features = ['INCARCERATION_LEN_DAYS','TOTAL_INCARCERATION_ALLPRIOR', 'NUM_PREV_INCARCERATION_ALLPRIOR', 
                 'AVG_INCARCERATION_ALLPRIOR','TOTAL_INCARCERATION_LAST5YR', 'NUM_PREV_INCARCERATION_LAST5YR', 
                 'AVG_INCARCERATION_LAST5YR']
@@ -172,7 +172,7 @@ def clean_negative_incarceration_len(df):
         df = pp.na_fill_col(df, col)
     return df
 
-def clean_county(df):
+def impute_county(df):
     # create dummies by every county
     df = create_dummies(df, 'COUNTY_CONVICTION')
     # categories = []
@@ -180,7 +180,7 @@ def clean_county(df):
     return df
 
 
-def clean_minmaxterm(df):
+def impute_minmaxterm(df):
     # replace so that max,min and min,max are the same
     r = {'MAX.TERM:,MIN.TERM:': 'MIN.TERM:,MAX.TERM:'}
     df['MINMAXTERM'] = df['MINMAXTERM'].replace(r)
