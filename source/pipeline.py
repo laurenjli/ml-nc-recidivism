@@ -24,7 +24,8 @@ from sklearn.model_selection import ParameterGrid
 from sklearn.metrics import accuracy_score as accuracy, confusion_matrix, f1_score, auc, roc_auc_score, precision_score
 from sklearn.metrics import roc_curve, precision_recall_curve
 
-import os; 
+import os
+import config; 
 
 
 ## Get Data
@@ -439,16 +440,16 @@ def get_metric_graph(df, metric, model_and_para, baseline, train_test_col,
 
 ### Master Classifier
 
-classifiers = { 'RF': RandomForestClassifier(n_jobs=-1, random_state=SEED),
-                'ET': ExtraTreesClassifier(n_jobs=-1, criterion='entropy', random_state=SEED),
-                'AB': AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), random_state=SEED),
+classifiers = { 'RF': RandomForestClassifier(n_jobs=-1, random_state=config.SEED),
+                'ET': ExtraTreesClassifier(n_jobs=-1, criterion='entropy', random_state=config.SEED),
+                'AB': AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), random_state=config.SEED),
                 'GB': GradientBoostingClassifier(learning_rate=0.05, subsample=0.5, max_depth=6,
-                                                n_estimators=10, random_state=SEED),
+                                                n_estimators=10, random_state=config.SEED),
                 'KNN': KNeighborsClassifier(n_neighbors=3),
-                'DT': DecisionTreeClassifier(max_depth=5, random_state=SEED),
-                'SVM': LinearSVC(random_state=SEED),
-                'LR': LogisticRegression(penalty='l1', C=1e5, random_state=SEED),
-                'BAG': BaggingClassifier(random_state=SEED),
+                'DT': DecisionTreeClassifier(max_depth=5, random_state=config.SEED),
+                'SVM': LinearSVC(random_state=config.SEED),
+                'LR': LogisticRegression(penalty='l1', C=1e5, random_state=config.SEED),
+                'BAG': BaggingClassifier(random_state=config.SEED),
                 'NB': MultinomialNB(alpha=1.0)
         }
 
