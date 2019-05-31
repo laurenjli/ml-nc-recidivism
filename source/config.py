@@ -8,7 +8,6 @@ DATA_DIR = "../ncdoc_data/data/preprocessed/traintest"
 RESULTS_DIR = "results"
 GRAPH_FOLDER = 'graphs'
 RESULTS_FILE = "results.csv"
-LABEL = "LABEL"
 SEED = 0
 
 #MODIFY THESE DICTIONARIES TO HAVE THE PARAMETERS NEEDED FOR CLEANING
@@ -16,18 +15,26 @@ VARIABLES = {
              'LABEL' : 'LABEL',
              'TO_DISCRETIZE' : [{'NUM_SENTENCES': (3, ['low','medium','high'])}],
              'DATES' : ['START_DATE', 'END_DATE'],
-             'MISSING' : [{'impute by xx': 'INMATE_RACE_CODE'}],
-             'CONTINUOUS_VARS_MINMAX' : [''],
-             'CATEGORICAL_VARS' : [''],
+             'MISSING' : {'MISSING_CAT': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
+                          'AGE': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
+                                  'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END'],
+                          'IMPUTE_MEAN': ['INCARCERATION_LEN_DAYS','TOTAL_INCARCERATION_ALLPRIOR', 'NUM_PREV_INCARCERATION_ALLPRIOR', 
+                                          'AVG_INCARCERATION_ALLPRIOR','TOTAL_INCARCERATION_LAST5YR', 'NUM_PREV_INCARCERATION_LAST5YR', 
+                                          'AVG_INCARCERATION_LAST5YR']
+                           },
+             'INDICATOR': {'INCARCERATION_LEN_DAYS': 'incorrect'}
+             'CONTINUOUS_VARS_MINMAX' : [],
+             'CATEGORICAL_VARS' : ['COUNTY_CONVICTION', 'MINMAXTERM', 'INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
              'VARS_TO_EXCLUDE' : ['ID', 'LABEL']
-            }
+             }
 
 ## RUNNING THE MODELS
 GRIDSIZE = 'test'
 OUTFILE = "results_"+GRIDSIZE+".csv"
 MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
-
-
+EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
+                         [1,2,5,10,20,30,50])
+EVAL_METRICS = ['auc']
 
 def define_clfs_params(grid_size):
     """

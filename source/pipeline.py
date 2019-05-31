@@ -74,12 +74,45 @@ def na_fill_col(df, col, fill_method = np.mean):
 
     return: None
 
-    Used in: impute_race, impute_age
+    Used in main.py
     '''
     cp = df.copy()
     cp.loc[cp[col].isna(), col] = fill_method(cp[col])
     df[col] = cp[col]
     return df
+
+
+def impute_with_2cols(df, year_col, pen_col, target_col):
+    '''
+    This function creates a missing binary column and imputes age using the 
+    helper column values given year of crime and sentencing penalty class code
+
+    df: dataframe
+    year_col: colname with date of offense
+    pen_col: colname with penalty class code info
+    target_col: column to impute
+
+    returns dataframe with imputed data
+    Used in main.py
+    '''
+    # find mean age given year and penalty class
+    def find_mean(year, pen_class):
+        #print(year)
+        #print(pen_class)
+        tmp = df[(df[year_col] == year) & (df[pen_col] == pen_class)]
+        print(tmp)
+        return np.mean(tmp[target_col])
+    
+    # create binary missing column 
+    df = pp.missing_col(df, target_col)
+
+    # copy dataframe to impute values then reinsert into df
+    cp = df.copy()
+    cp[target_col]= cp.apply(lambda row: find_mean(row[year_col], row[pen_col]) if pd.isnull(row[target_col]) else row[target_col], axis=1)
+    cp.loc[cp[target_col].isna(), target_col] = find_mean(cp[year_col], cp[pen_col])
+    df[target_col] = cp[target_col]
+    return df
+
 
 def fill_nan(df, attributes_lst, how='mean'):
     '''
@@ -165,6 +198,24 @@ def out_of_range_to_none(row, year_range, attributes_lst):
     return row
 
 
+def impute_missing(df, col, fill_cat = 'MISSING'):
+    '''
+    This function creates a missing binary column and imputes fill_cat
+
+    df: dataframe
+    fill_cat: impute value
+
+    returns dataframe with imputed data
+    used in main.py
+    '''
+    # create binary missing column
+    # df = pp.missing_col(df, col)
+    # copy dataframe to impute values then reinsert into df
+    cp = df.copy()
+    cp.loc[cp[col].isna(), col] = fill_cat
+    df[col] = cp[col]
+    return df
+
 ## Generate Features/ Predictors
 
 
@@ -217,7 +268,7 @@ def gender_to_dummy(df, gender_var):
     df.rename(index=str, columns={gender_var: "FEMALE"}, inplace=True)
     return df
 
-def missing_col(df, col):
+def create_indicator(df, col, indicator_name='missing'):
     '''
     This function creates binary column with missing or not
     
@@ -227,7 +278,7 @@ def missing_col(df, col):
 
     return: None
     '''
-    missingcol = col + '_missing'
+    missingcol = col + '_' + indicator_name
     df[missingcol] = [1 if x else 0 for x in y[col].isna()]
     return df
 
