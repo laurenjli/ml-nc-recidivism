@@ -6,8 +6,18 @@ import sqlite3
 import pandas as pd
 import numpy as np
 
+def add_features(database_path, table_names, insert_query_list):
+    '''
+    Generic code to add a new table into DB for the feature
+    '''
+    # create new tables for new features
+    for i, query in enumerate(insert_query_list):
+        name = table_names[i]
+        gettinglabels.query_db(query, args=None, database_path=database_path, table_name=name, new_table=True)
+        print("table {} created".format(name))
+
 # priority 1
-def add_gender_race_age():
+def add_gender_race_age(database_path=DATABASE_FILENAME):
     query = """
     WITH inmate_char as (
         SELECT ID, PREFIX, INMATE_GENDER_CODE, INMATE_RACE_CODE, START_DATE, END_DATE, INMATE_BIRTH_DATE,
@@ -50,7 +60,9 @@ def add_gender_race_age():
     (age_offense natural join prev) as t2
     limit 5;
     """
-    return query
+    table_names = ['inmate_char']
+    add_features(database_path, table_names, query)
+
 
 def add_num_sentences():
     query = """
@@ -62,8 +74,34 @@ def add_num_sentences():
     SELECT *
     FROM labels natural join sent
     """
-    return query
+    table_names = ['num_sent']
+    add_features(database_path, table_names, query)
 
+    table_names2 = ['totcntavg_sentences_allprior', 'totcntavg_sentences_last5yr']
+
+    query2 = (''' 
+        SELECT
+        a.ID, a.PREFIX, a.START_DATE, a.END_DATE,
+        sum(b.NUM_SENTENCES) as TOTAL_SENT_ALLPRIOR,
+        count(*) as NUM_PREV_SENT_ALLPRIOR,
+        sum(b.NUM_SENTENCES)/count(*) as AVG_SENT_ALLPRIOR 
+        FROM num_sent as a join num_sent as b on a.ID=b.ID
+        WHERE b.END_DATE <= a.END_DATE 
+        GROUP BY a.ID, a.PREFIX, a.START_DATE, a.END_DATE
+        ''',
+        '''
+        SELECT
+        a.ID, a.PREFIX, a.START_DATE, a.END_DATE,
+        sum(b.NUM_SENTENCES) as TOTAL_SENT_LAST5YR,
+        count(*) as NUM_PREV_SENT_LAST5YR,
+        sum(b.NUM_SENTENCES)/count(*) as AVG_SENT_LAST5YR  
+        FROM num_sent as a join num_sent as b on a.ID=b.ID 
+        WHERE julianday(b.END_DATE) >= (julianday(a.END_DATE) - 1825) and julianday(b.END_DATE) <= (julianday(a.END_DATE)
+        GROUP BY a.ID, a.PREFIX, a.START_DATE, a.END_DATE
+        '''
+        )
+
+    add_features(database_path, table_names2, query2)
 
 # priority 2
 
@@ -74,8 +112,8 @@ def add_num_sentences():
 # use for: missing (i.e negative) age
 def missing_col(df, col):
     '''
-    This function fills NA values in a df column by given method
-
+    This function creates binary column with missing or not
+    
     df: dataframe
     fill_method: function specifying how to fill the NA values
     col: column name

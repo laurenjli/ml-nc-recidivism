@@ -180,7 +180,8 @@ def flag_to_dummy(df, attribute_lst, rename=True):
     Converts a flag variable to a dummy with 1 for Yes and 0 for No
     '''
     for var in attribute_lst:
-        df[var] = df[var].map({'Y': 1, 'N': 0, 'Yes': 1, 'No': 0, 'T': 1, 'F': 0, 't': 1, 'f': 0,                               'True': 1, 'False': 0, True: 1, False: 0, 'OPEN': 1, 'CLOSED': 0})
+        df[var] = df[var].map({'Y': 1, 'N': 0, 'Yes': 1, 'No': 0, 'T': 1, 'F': 0, 't': 1, 'f': 0,
+                                     'True': 1, 'False': 0, True: 1, False: 0, 'OPEN': 1, 'CLOSED': 0})
         if rename:
             new_var_name = var[:-5]
             df.rename(index=str, columns={var: new_var_name}, inplace=True)
@@ -193,6 +194,7 @@ def gender_to_dummy(df, gender_var):
     df[gender_var] = df[gender_var].map({'FEMALE': 1, 'MALE': 0, 'F': 1, 'M': 0})
     df.rename(index=str, columns={gender_var: "FEMALE"}, inplace=True)
     return df
+
 
 
 ## Classification
