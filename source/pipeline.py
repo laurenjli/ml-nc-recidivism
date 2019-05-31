@@ -376,14 +376,20 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
         grid = ParameterGrid(custom_grid[model])
         for parameters in grid:
             classifier = classifiers[model]
-            print(classifier)
+
             clfr = classifier.set_params(**parameters)
             clfr.fit(X_train, y_train)
+
             eval_result = [model, classifier, parameters]
-            y_pred_prob = clfr.predict_proba(X_test)[:,1]
-            #plot_precision_recall_n(y_test, y_pred_prob, model+'.png')
+
+            if isinstance(clfr, LinearSVC):
+                y_pred_prob = clfr.decision_function(X_test)
+            else:    
+                y_pred_prob = clfr.predict_proba(X_test)[:,1]
+
             if eval_metrics:
                 eval_result += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]
+            
             if eval_metrics_by_level[0]:
                 for level in eval_metrics_by_level[1]:
                    y_test, y_pred = pred_at_level(y_test, y_pred_prob, level)
