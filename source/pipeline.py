@@ -12,14 +12,17 @@ import matplotlib.pyplot as plt
 
 from scipy import stats
 from sklearn.model_selection import train_test_split
+from sklearn.model_selection import ParameterGrid 
+from sklearn.preprocessing import MinMaxScaler
 
-from sklearn import tree as tree
-from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
-from sklearn.ensemble import BaggingClassifier,AdaBoostClassifier,RandomForestClassifier
-from sklearn.model_selection import ParameterGrid 
+from sklearn.naive_bayes import MultinomialNB
+from sklearn.ensemble import (RandomForestClassifier, ExtraTreesClassifier,
+GradientBoostingClassifier, AdaBoostClassifier, BaggingClassifier)
+
 
 from sklearn.metrics import accuracy_score as accuracy, confusion_matrix, f1_score, auc, roc_auc_score, precision_score
 from sklearn.metrics import roc_curve, precision_recall_curve

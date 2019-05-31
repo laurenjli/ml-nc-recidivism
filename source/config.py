@@ -16,7 +16,7 @@ VARIABLES = {
              'LABEL' : 'LABEL',
              'TO_DISCRETIZE' : [{'NUM_SENTENCES': (3, ['low','medium','high'])}],
              'DATES' : ['START_DATE', 'END_DATE'],
-             'MISSING' : [{'INMATE_RACE_CODE': ft.impute_race}],
+             'MISSING' : [{'impute by xx': 'INMATE_RACE_CODE'}],
              'CONTINUOUS_VARS_MINMAX' : [''],
              'CATEGORICAL_VARS' : [''],
              'VARS_TO_EXCLUDE' : ['ID', 'LABEL']
