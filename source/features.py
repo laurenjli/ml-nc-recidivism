@@ -122,14 +122,13 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
     SELECT * 
     FROM (inmate_char natural join age_first) as t1 natural join 
     (age_offense natural join prev) as t2
-    limit 5;
     """
     table_names = ['inmate_char']
     create_ft_table(database_path, table_names, query)
 
 ## Number of sentences
 
-def add_num_sentences():
+def add_num_sentences(database_path = DATABASE_FILENAME):
     query = """
     WITH sent as (
         SELECT OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, count(SENTENCE_COMPONENT_NUMBER) as NUM_SENTENCES
