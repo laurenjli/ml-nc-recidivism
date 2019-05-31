@@ -8,7 +8,7 @@ DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
 
 ## FEATURE GENERATION TABLES ##
 
-def add_features(database_path, table_names, insert_query_list):
+def create_ft_table(database_path, table_names, insert_query_list):
     '''
     Generic code to add a new table into DB for the feature
     '''
@@ -51,6 +51,32 @@ def create_index_incarcerationlen(database_path=DATABASE_FILENAME):
 
 
 ## ADD FEATURES ##
+
+def add_all_features(database_path = DATABASE_FILENAME):
+    '''
+    This function creates a data table with all features
+    '''
+    add_gender_race_age()
+    add_countyconviction()
+    add_incarceration_lens()
+    add_minmaxterm()
+    add_num_sentences()
+
+    #add them all into a sql table called "Data"
+    table_names = [data]
+    insert_query = """
+    SELECT * FROM
+    labels natural join inmate_char
+    natureal join num_sent
+    natural join totcntavg_sentences_allprior
+    natural join totcntavg_sentences_last5yr
+    natural join incarceration_len
+    natural join totcntavg_incarceration_allprior 
+    natural join totcntavg_incarceration_last5yr
+    natural join minmaxterm
+    natural join countyconviction
+    """
+    create_ft_table(database_path, table_names, insert_query)
 
 ## Age, race, age
 
@@ -98,7 +124,7 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
     limit 5;
     """
     table_names = ['inmate_char']
-    add_features(database_path, table_names, query)
+    create_ft_table(database_path, table_names, query)
 
 ## Number of sentences
 
@@ -113,7 +139,7 @@ def add_num_sentences():
     FROM labels natural join sent
     """
     table_names = ['num_sent']
-    add_features(database_path, table_names, query)
+    create_ft_table(database_path, table_names, query)
 
     table_names2 = ['totcntavg_sentences_allprior', 'totcntavg_sentences_last5yr']
 
@@ -139,7 +165,7 @@ def add_num_sentences():
         '''
         )
 
-    add_features(database_path, table_names2, query2)
+    create_ft_table(database_path, table_names2, query2)
 
 ## Incarceration length
 
@@ -159,7 +185,7 @@ def add_incarceration_lens(database_path=DATABASE_FILENAME):
         FROM labels 
         natural join incarceration_len 
         ''',)
-    add_features(database_path, table_names, query)
+    create_ft_table(database_path, table_names, query)
     create_index_incarcerationlen()
 
     table_names = ['totcntavg_incarceration_allprior', 'totcntavg_incarceration_last5yr']
@@ -186,7 +212,7 @@ def add_incarceration_lens(database_path=DATABASE_FILENAME):
         '''
         )
 
-    add_features(database_path, table_names, query)
+    create_ft_table(database_path, table_names, query)
     print('-- incarceration len features completed --')
 
 ## County of convictions
@@ -203,7 +229,7 @@ def add_countyconviction(database_path=DATABASE_FILENAME):
             and COMMITMENT_PREFIX in (select PREFIX from labels) 
             group by OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
             ''',)
-    add_features(database_path, table_names, query)
+    create_ft_table(database_path, table_names, query)
     print(' -- county of conviction added --')
 
 ## Min/max terms
@@ -221,7 +247,7 @@ def add_minmaxterm(database_path=DATABASE_FILENAME):
     and COMMITMENT_PREFIX in (select PREFIX from labels) 
     group by OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
     ''',)
-    add_features(database_path, table_names, query)
+    create_ft_table(database_path, table_names, query)
     print( '-- min max term added -- ')
 
 

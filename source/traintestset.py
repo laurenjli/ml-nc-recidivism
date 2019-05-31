@@ -92,9 +92,9 @@ def get_train_test_splits(train_start_year=1995, test_start_year=1997, time_peri
 if __name__ == '__main__':
     time_period = 365.0
 
-#    setup()  # To load database of data tables
+    setup()  # To load database of data tables
     gettinglabels.create_labels(DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')  # Get labels
-    add_features() # Create new table data for features and data
+    ft.add_all_features() # Create new table data for features and data
 
     test_year=1997
     while test_year <= 2018:

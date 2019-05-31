@@ -8,17 +8,9 @@ import numpy as np
 import features as ft
 import gettinglabels
 
-def add_features(database_path, table_names, insert_query_list):
-    '''
-    Generic code to add a new table into DB for the feature
-    '''
-    # create new tables for new features
-    for i, query in enumerate(insert_query_list):
-        name = table_names[i]
-        gettinglabels.query_db(query, args=None, database_path=database_path, table_name=name, new_table=True)
-        print("table {} created".format(name))
-
 # priority 1
+
+
 def add_gender_race_age(database_path=DATABASE_FILENAME):
     query = """
     WITH inmate_char as (
@@ -63,7 +55,7 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
     limit 5;
     """
     table_names = ['inmate_char']
-    ft.add_features(database_path, table_names, query)
+    ft.create_ft_table(database_path, table_names, query)
 
 
 def add_num_sentences():
@@ -77,7 +69,7 @@ def add_num_sentences():
     FROM labels natural join sent
     """
     table_names = ['num_sent']
-    ft.add_features(database_path, table_names, query)
+    ft.create_ft_table(database_path, table_names, query)
 
     table_names2 = ['totcntavg_sentences_allprior', 'totcntavg_sentences_last5yr']
 
@@ -103,7 +95,7 @@ def add_num_sentences():
         '''
         )
 
-    ft.add_features(database_path, table_names2, query2)
+    ft.create_ft_table(database_path, table_names2, query2)
 
 # priority 2
 
