@@ -356,7 +356,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             if eval_metrics_by_level[0]:
                 for level in eval_metrics_by_level[1]:
                    y_test, y_pred = pred_at_level(y_test, y_pred_prob, level)
-                    eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]]
+                   eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]]
              
             results.loc[len(results)] = eval_result
     return results

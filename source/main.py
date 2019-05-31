@@ -20,7 +20,8 @@ CUSTOM_GRID = {
 'DT': {'criterion': ['gini'], 'max_depth': [1,5,10],'min_samples_split': [10, 20, 50], 'random_state': [SEED]},
 'RF':{'n_estimators': [1,10,100], 'max_depth': [5], 'max_features': ['sqrt'],'min_samples_split': [10, 20, 50], 'random_state': [SEED]},
 'AB': { 'algorithm': ['SAMME'], 'n_estimators': [1,10,100], 'random_state': [SEED]},
-'BA': {'base_estimator': [LogisticRegression()], "n_estimators":[1,10,100]}, 'random_state': [SEED]}
+'BA': {'base_estimator': [LogisticRegression()], "n_estimators":[1,10,100], 'random_state': [SEED]},
+'SVM' :{'C' :[0.01,0.1,1,10], 'tol':[1e-5], 'random_state': [SEED]}
 }
 '''
 
@@ -37,7 +38,7 @@ CUSTOM_GRID = {
 
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'], [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
-MODELS = ['LR', 'DT', 'SVM','KNN', 'RF', 'AB', 'BA']
+MODELS = ['LR', 'DT','KNN', 'RF', 'AB', 'BA']
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
 def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2018):
