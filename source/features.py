@@ -63,7 +63,7 @@ def add_all_features(database_path = DATABASE_FILENAME):
     add_num_sentences()
 
     #add them all into a sql table called "Data"
-    table_names = [data]
+    table_names = ['data']
     insert_query = """
     SELECT * FROM
     labels natural join inmate_char
@@ -335,12 +335,3 @@ def impute_age(df, year_col, pen_col, target_col):
     df[target_col] = cp[target_col]
     return df
 
-
-if __name__ == '__main__':
-
-    # add all features tables
-    add_incarceration_lens()
-    add_countyconviction()
-    add_minmaxterm()
-
-    # create final data table with all features

@@ -5,7 +5,7 @@ and temporal validation
 Before using this file, you need the downloaded CSV data for NC recidivism from https://github.com/jtwalsh0/ncdoc_data
 The data we are using for this analysis was downloaded as of 26 April 2019 
 '''
-
+import os
 import gettinglabels
 from create_sqldb import create_db
 
@@ -88,11 +88,13 @@ def get_train_test_splits(train_start_year=1995, test_start_year=1997, time_peri
     add_features()
     temporal_validation('test_'+ str(test_year), train_start_year=train_start_year, test_start_year=test_start_year, time_period=time_period)
 
-
-if __name__ == '__main__':
+def full_traintest():
     time_period = 365.0
 
-    setup()  # To load database of data tables
+    # check if full database exists
+    if not os.path.exists(DATABASE_FILENAME):
+        setup()  # To load database of data tables
+
     gettinglabels.create_labels(DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')  # Get labels
     ft.add_all_features() # Create new table data for features and data
 
@@ -100,6 +102,7 @@ if __name__ == '__main__':
     while test_year <= 2018:
         temporal_validation('test_'+ str(test_year), train_start_year=1995, test_start_year=test_year, time_period=time_period)
         test_year += 1
+
 
 
 

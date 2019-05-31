@@ -42,7 +42,11 @@ MODELS = ['LR', 'DT','KNN', 'RF', 'AB', 'BA']
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
 def main(dir=DATA_DIR, label=LABEL, results_file_name=RESULTS_FILE, first_year=1997, last_year=2017):
+    # sample code 
+    if not os.path.exists(csvfiles):
+        traintestset.full_traintest()
     
+
     year = first_year
 
     while year <= last_year:
