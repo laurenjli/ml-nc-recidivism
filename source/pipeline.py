@@ -228,21 +228,6 @@ def missing_col(df, col):
     return df
 
 
-## Classification
-
-### Classifiers
-
-
-
-classifiers = { 'LR': LogisticRegression(penalty='l1', C=1e5),
-                'KNN': KNeighborsClassifier(n_neighbors=3),
-                'DT': DecisionTreeClassifier(),
-                'SVM': LinearSVC(random_state=0, tol=1e-5),
-                'RF': RandomForestClassifier(n_estimators=50, n_jobs=-1),
-                'AB': AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), algorithm="SAMME", n_estimators=200),
-                'BA': BaggingClassifier()} 
-
-
 ### Evaluation Metrics
 
 
@@ -350,8 +335,122 @@ metrics = { 'accuracy':accuracy_at_threshold,
             'auc':roc_auc_score}
 
 
+# Understanding Best models #
+
+def get_best_models(df, time_col, test_years, cols, metric):
+    '''
+    Identify best models for the specified metric
+    Inputs:
+        df: pandas dataframe of results
+        time_col: (str) name of the col that identifies different traintest sets 
+        test_years: list of years in results
+        cols: list of cols for the table
+        metric: (str) precision, recall, accuracy, f1_score, auc
+    
+    Return dataframe of best model for the specified metric
+    '''
+    best_models = pd.DataFrame(columns= cols)
+
+    for year in test_years:
+        year_data = df[df[time_col]==year]
+        highest = year_data[metric].max()
+        model = year_data[year_data[metric] == highest]
+        print("For train-test set {}, highest {} attained is {}".format(year, metric, highest))
+        best_models = best_models.append(model[cols])
+
+    return best_models
+
+def sort_models(data, metric, top_k, cols):
+    '''
+    Get top k models
+    '''
+    sort = data.sort_values(metric, ascending=False)
+    results = sort[cols][:top_k]
+    return results
+
+
+def get_stability_score(trainsets, metric, cols):
+    '''
+    Identify models that are top ranking in all train test sets
+    Inputs:
+        trainsets: list of dataframes that correspond to each traintest set
+    '''
+    result = pd.DataFrame()
+    for sets in trainsets:
+        sort = sets.sort_values(metric, ascending=False)
+        sort['rank'] = range(len(sort))
+        result = result.append(sort)
+    result = result[cols + ['rank']]
+    return result.groupby('parameters').mean().sort_values('rank')
+
+
+def get_metric_graph(df, metric, model_and_para, baseline, train_test_col, 
+                     train_test_val, title, filename):
+    '''
+    Inputs:
+        df: pandas dataframe of results
+        metric: str e.g. 'precision_at_5'
+        model_and_para: list of tuples containing models and paras in str 
+            e.g. [('model', 'parameters'), ('model','parameters')]
+        train_test_col: column name for train test sets (str)
+        train_test_val: list of values in train test sets
+        baseline: list of baselines over the train test sets
+        title: title of graph
+    '''
+    def get_data(df, dic, model, para, metric, train_test_col, train_test_val):
+        '''
+        Getting the data points to plot
+        '''
+        col = []
+        for yr in train_test_val:
+            trainset = df[df[train_test_col]==yr]
+            temp = trainset[trainset['parameters']==para][[metric]]
+            col.extend(temp[metric].values)
+        dic[model + ' ' + para] = col
+        return dic
+    
+    def plot_graph(df, metric, title, filename, save=False):
+        '''
+        Plot metric over different traintest sets
+        '''
+        df.plot.line()
+        plt.title(title)
+        plt.ylabel(metric)
+        plt.xticks([0,1,2], ['jul12','jan12','jul13'])
+        if metric.startswith('precision'):
+            plt.yticks([0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
+        else:
+            plt.yticks([0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=True, ncol=1)
+        if save:
+            plt.savefig(filename)
+        plt.show()
+
+    full_dict = {}
+
+    for m in model_and_para:
+        model, para = m
+        full_dict = get_data(df, full_dict, model, para, metric, 
+                             train_test_col, train_test_val)
+    new_df = pd.DataFrame(full_dict)
+    
+    plot_graph(new_df, metric, title, filename, save=True)
+
+
 ### Master Classifier
 
+classifiers = { 'RF': RandomForestClassifier(n_jobs=-1, random_state=SEED),
+                'ET': ExtraTreesClassifier(n_jobs=-1, criterion='entropy', random_state=SEED),
+                'AB': AdaBoostClassifier(DecisionTreeClassifier(max_depth=1), random_state=SEED),
+                'GB': GradientBoostingClassifier(learning_rate=0.05, subsample=0.5, max_depth=6,
+                                                n_estimators=10, random_state=SEED),
+                'KNN': KNeighborsClassifier(n_neighbors=3),
+                'DT': DecisionTreeClassifier(max_depth=5, random_state=SEED),
+                'SVM': LinearSVC(random_state=SEED),
+                'LR': LogisticRegression(penalty='l1', C=1e5, random_state=SEED),
+                'BAG': BaggingClassifier(random_state=SEED),
+                'NB': MultinomialNB(alpha=1.0)
+        }
 
 def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst):
     '''
