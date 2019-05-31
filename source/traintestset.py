@@ -88,6 +88,9 @@ def full_traintest():
         temporal_validation('test_'+ str(test_year), train_start_year=1995, test_start_year=test_year, time_period=time_period)
         test_year += 1
 
+if __name__ == '__main__':
+    full_traintest()
+
 
 
 
