@@ -122,7 +122,6 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
     SELECT * 
     FROM (inmate_char natural join age_first) as t1 natural join 
     (age_offense natural join prev) as t2
-    limit 5;
     """
     table_names = ['inmate_char']
     create_ft_table(database_path, table_names, query)
