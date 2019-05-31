@@ -18,6 +18,18 @@ def add_features(database_path, table_names, insert_query_list):
         gettinglabels.query_db(query, args=None, database_path=database_path, table_name=name, new_table=True)
         print("table {} created".format(name))
 
+def build_index(database_path, query):
+    '''
+    Generic code to build index
+    '''
+    con = sqlite3.connect(database_path)
+    cur = con.cursor()
+    for q in query:
+        cur.execute(q)
+        con.commit()
+        print('index done')
+    con.close()
+
 ## FEATURE CLEANING ##
 
 def impute_race(df, racecol = 'INMATE_RACE_CODE', fill_method = 'Unknown'):

@@ -102,19 +102,6 @@ def add_minmaxterm(database_path=DATABASE_FILENAME):
 
 ## CREATING INDICIES
 
-def build_index(database_path, query):
-    '''
-    Generic code to build index
-    '''
-    con = sqlite3.connect(database_path)
-    cur = con.cursor()
-    for q in query:
-        cur.execute(q)
-        con.commit()
-        print('index done')
-    con.close()
-
-
 def create_index_incarcerationlen(database_path=DATABASE_FILENAME):
     '''
     Building an index on incarceration_len table to improve perf
@@ -131,7 +118,7 @@ def create_index_incarcerationlen(database_path=DATABASE_FILENAME):
     ON incarceration_len(END_DATE)
     ''')
 
-    build_index(database_path, create_index)
+    ft.build_index(database_path, create_index)
 
 
 ## SQL TO PANDAS
