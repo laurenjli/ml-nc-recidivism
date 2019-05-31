@@ -5,6 +5,8 @@
 import sqlite3
 import pandas as pd
 import numpy as np
+import features as ft
+import gettinglabels
 
 def add_features(database_path, table_names, insert_query_list):
     '''
@@ -61,7 +63,7 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
     limit 5;
     """
     table_names = ['inmate_char']
-    add_features(database_path, table_names, query)
+    ft.add_features(database_path, table_names, query)
 
 
 def add_num_sentences():
@@ -113,7 +115,7 @@ def add_num_sentences():
 def missing_col(df, col):
     '''
     This function creates binary column with missing or not
-    
+
     df: dataframe
     fill_method: function specifying how to fill the NA values
     col: column name

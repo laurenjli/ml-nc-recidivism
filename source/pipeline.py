@@ -60,6 +60,22 @@ def remove_outliers(df, attribute_lst, sd_threshold=3):
         df[attribute] = df[attribute][(np.abs(zscore(df[attribute])) < sd_threshold)]
     return df
 
+def na_fill_col(df, col, fill_method = np.mean):
+    '''
+    This function fills NA values in a df column by given method
+
+    df: dataframe
+    fill_method: function specifying how to fill the NA values
+    col: column name
+
+    return: None
+
+    Used in: impute_race, impute_age
+    '''
+    cp = df.copy()
+    cp.loc[cp[col].isna(), col] = fill_method(cp[col])
+    df[col] = cp[col]
+    return df
 
 def fill_nan(df, attributes_lst, how='mean'):
     '''
@@ -197,6 +213,19 @@ def gender_to_dummy(df, gender_var):
     df.rename(index=str, columns={gender_var: "FEMALE"}, inplace=True)
     return df
 
+def missing_col(df, col):
+    '''
+    This function creates binary column with missing or not
+    
+    df: dataframe
+    fill_method: function specifying how to fill the NA values
+    col: column name
+
+    return: None
+    '''
+    missingcol = col + '_missing'
+    df[missingcol] = [1 if x else 0 for x in y[col].isna()]
+    return df
 
 
 ## Classification

@@ -10,21 +10,13 @@ Rachel Ker
 import pandas as pd
 import gettinglabels
 import sqlite3
+import pipeline as pp
+import features as ft 
 
 DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
 
 
 ## FEATURE GENERATION ##
-
-def add_features(database_path, table_names, insert_query_list):
-    '''
-    Generic code to add a new table into DB for the feature
-    '''
-    # create new tables for new features
-    for i, query in enumerate(insert_query_list):
-        name = table_names[i]
-        gettinglabels.query_db(query, args=None, database_path=database_path, table_name=name, new_table=True)
-        print("table {} created".format(name))
 
 
 def add_incarceration_lens(database_path=DATABASE_FILENAME):
@@ -43,7 +35,7 @@ def add_incarceration_lens(database_path=DATABASE_FILENAME):
         FROM labels 
         natural join incarceration_len 
         ''',)
-    add_features(database_path, table_names, query)
+    ft.add_features(database_path, table_names, query)
     create_index_incarcerationlen()
 
     table_names = ['totcntavg_incarceration_allprior', 'totcntavg_incarceration_last5yr']
@@ -70,7 +62,7 @@ def add_incarceration_lens(database_path=DATABASE_FILENAME):
         '''
         )
 
-    add_features(database_path, table_names, query)
+    ft.add_features(database_path, table_names, query)
     print('-- incarceration len features completed --')
 
 
@@ -87,7 +79,7 @@ def add_countyconviction(database_path=DATABASE_FILENAME):
             and COMMITMENT_PREFIX in (select PREFIX from labels) 
             group by OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
             ''',)
-    add_features(database_path, table_names, query)
+    ft.add_features(database_path, table_names, query)
     print(' -- county of conviction added --')
 
 
@@ -104,7 +96,7 @@ def add_minmaxterm(database_path=DATABASE_FILENAME):
     and COMMITMENT_PREFIX in (select PREFIX from labels) 
     group by OFFENDER_NC_DOC_ID_NUMBER, COMMITMENT_PREFIX
     ''',)
-    add_features(database_path, table_names, query)
+    ft.add_features(database_path, table_names, query)
     print( '-- min max term added -- ')
 
 
@@ -190,7 +182,7 @@ def clean_negative_incarceration_len(df):
     # replace missing with mean
     for col in features:
         df[col] = df[col].where(df[col]>=0)   # replace neg values with nulls
-    df = replace_missing_with_mean(df, df, features)
+        df = pp.na_fill_col(df, col)
     return df
 
 def clean_county(df):
