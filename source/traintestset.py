@@ -73,8 +73,7 @@ def get_train_test_splits(train_start_year=1995, test_start_year=1997, time_peri
     temporal_validation('test_'+ str(test_year), train_start_year=train_start_year, test_start_year=test_start_year, time_period=time_period)
 
 
-def full_traintest():
-    time_period = 365.0
+def full_traintest(time_period=365.0):
 
     # check if full database exists
     if not os.path.exists(DATABASE_FILENAME):
