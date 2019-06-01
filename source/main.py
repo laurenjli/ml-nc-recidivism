@@ -95,8 +95,8 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             df_test[attribute] = scaler.transform(df_test[attribute].values.reshape(-1, 1))
 
         # define list of features
-        #attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
-        attributes_lst = [x for x in df_train.columns if x in variables['CONTINUOUS_VARS_MINMAX']]
+        attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
+        #attributes_lst = [x for x in df_train.columns if x in variables['CONTINUOUS_VARS_MINMAX']]
         for attr in attributes_lst:
             if attr not in df_train.columns:
                 df_test.loc[:,c] = 0
