@@ -28,7 +28,10 @@ from sklearn.metrics import accuracy_score as accuracy, confusion_matrix, f1_sco
 from sklearn.metrics import roc_curve, precision_recall_curve
 
 import os
-import config; 
+import config
+from aequitas.group import Group
+from aequitas.plotting import Plot
+
 
 
 ## Get Data
@@ -392,23 +395,20 @@ def precision_at_threshold(y_true, y_predicted):
     _, fp, _, tp = confusion_matrix(y_true, y_predicted).ravel()
     return 1.0 * tp / (tp + fp)
 
-def pred_at_level(y_true, y_scores, level):
-    '''
-    This function takes the predicted score and converts it into label 1 or 0
-    based on the level -percentage of observations- decided to include, e.i. label 1. 
-    Input:
-        y_true: np.array with the observed Ys 
-        y_scores: np.array with the predicted scores 
-        level: percentage of the population labeled 1
-    Output:
-        The predicted label {0, 1}
-    '''
+def scores_pctpop(pred_scores, pct_pop):
     
-    idx = np.argsort(np.array(y_scores))[::-1]
-    y_scores, y_true = np.array(y_scores)[idx], np.array(y_true)[idx]
-    cutoff_index = int(len(y_scores) * (level / 100.0))
-    y_preds_at_level = [1 if x < cutoff_index else 0 for x in range(len(y_scores))]
-    return y_true, y_preds_at_level
+    #identify number of positives to have given target percent of population
+    num_pos = int(round(len(pred_scores)*(pct_pop/100),0))
+    #turn predictions into series
+    pred_df = pd.Series(pred_scores)
+    idx = pred_df.sort_values(ascending=False)[0:num_pos].index 
+    
+    #set all observations to 0
+    pred_df.iloc[:] = 0
+    #set observations by index (the ones ranked high enough) to 1
+    pred_df.iloc[idx] = 1
+    
+    return pred_df
 
 
 metrics = { 'accuracy':accuracy_at_threshold,
@@ -535,7 +535,16 @@ classifiers = { 'RF': RandomForestClassifier(n_jobs=-1, random_state=config.SEED
                 'NB': MultinomialNB(alpha=1.0)
         }
 
-def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, year, plot_pr = None):
+def plot_bias(bias_df, bias_metrics = ['ppr','pprev','fnr','fpr']):
+    '''
+    '''
+    g = Group()
+    xtab, _ = g.get_crosstabs(bias_df)
+    aqp = Plot()
+    p = aqp.plot_group_metric_all(xtab, metrics=['ppr','pprev','fnr','fpr'], ncols=4, min_group_size = None)
+
+def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, year,
+    plot_pr = None, compute_bias =False):
     '''
     This function fits a set of classifiers and a dataframe with performance measures for each
     Input:
@@ -549,33 +558,51 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     Output:
         Dataframe containing performance measures for each classifier
     '''
+    #initialize results
     results_columns = (['model','classifiers', 'parameters', 'train_set_size', 'validation_set_size','features'] + eval_metrics + 
                       [metric + '_' + str(level) for level in eval_metrics_by_level[1] for metric in eval_metrics_by_level[0]])
     results =  pd.DataFrame(columns=results_columns)
+    # subset training and test sets 
     y_train = train_set[label]
     X_train = train_set.loc[:, attributes_lst]
     y_test = test_set[label]
     X_test = test_set.loc[:, attributes_lst]
+    # iterate through models
     for model in models:
+        #create parameters grids
         grid = ParameterGrid(custom_grid[model])
-        
+        # iterate through parameters for given model
         for parameters in grid:
             classifier = classifiers[model]
             print('Running model: {}, param: {}'.format(model, parameters))
+            # set parameters
             clfr = classifier.set_params(**parameters)
+            # fit model
             clfr.fit(X_train, y_train)
 
             eval_result = [model, classifier, parameters, len(X_train), len(X_test), attributes_lst]
-
+            # calculate scores
             if isinstance(clfr, LinearSVC):
                 y_pred_prob = clfr.decision_function(X_test)
             else:    
                 y_pred_prob = clfr.predict_proba(X_test)[:,1]
 
+            # plot precision and recall if desired
             if plot_pr:
-                model_name = '{}_{}_{}'.format(year, model, parameters)
+                model_name = 'PRC_{}_{}_{}'.format(year, model, parameters)
                 print('plotting precision recall for {}'.format(model_name))
                 plot_precision_recall_n(y_test, y_pred_prob, model_name, plot_pr)
+
+            # plot bias metrics if desired
+            if compute_bias:
+                bias_df['id'] = bias_df['ID']
+                bias_df['score'] = scores_pctpop(y_pred_prob, config.POP_THRESHOLD)
+                bias_df['label_value'] = bias_df[label]
+                bias_df = test_set.loc[:, bias_lst]
+                # g = Group()
+                # xtab, _ = g.get_crosstabs(bias_df)
+                # aqp = Plot()
+                # p = aqp.plot_group_metric_all(xtab, metrics=['ppr','pprev','fnr','fpr'], ncols=4, min_group_size = None)
 
             if eval_metrics:
                 eval_result += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]

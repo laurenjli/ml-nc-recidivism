@@ -46,7 +46,8 @@ VARIABLES = {
              'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE', 'LABEL','SENTENCE_YEAR',
                                   'INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 
                                   'PREFIX'],
-             'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL']
+             'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL'],
+             'BIAS': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 'label_value', 'id', 'PREFIX', 'score']
              }
 
 
@@ -57,8 +58,12 @@ MODELS = ['LR']
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
+ID = 'ID'
 # plot pr: save or show or None
-PLOT_PR = 'save'
+PLOT_PR = None
+# compute bias: true or false
+BIAS = True
+POP_THRESHOLD = 20
 
 
 def define_clfs_params(grid_size):
