@@ -45,7 +45,7 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             ## create missing indicators
             for fill in variables['INDICATOR']:
                 attributes = variables['INDICATOR'][fill]
-                for attr in attribute:
+                for attr in attributes:
                     if attr == 'INCARCERATION_LEN_DAYS':
                         df[attr] = df[attr].where(df[attr]>=0)   # replace neg values with nulls
                     df = pp.create_indicator(df, attr, fill)

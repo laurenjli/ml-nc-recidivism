@@ -171,7 +171,7 @@ def to_date(df, attribute_lst, years_range=[1000, 3000]):
         a df with the corresponding None
     '''
     
-    df = df.apply(out_of_range_to_none, axis=1, args=(years_range, attribute_lst))
+    #df = df.apply(out_of_range_to_none, axis=1, args=(years_range, attribute_lst))
     for var in attribute_lst:
         df[var] = df[var].astype('datetime64[s]')#, errors = 'ignore')
     return df
