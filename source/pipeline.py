@@ -256,8 +256,9 @@ def categorical_to_dummy(df, attribute_lst):
 def categorical_to_dummy_with_groupconcat(df, attribute_lst):
     for var in attribute_lst:
         dummy = df[var].str.get_dummies(sep=',')
-        df = df.join(dummy)
-        df.drop(var, axis=1, inplace=True)
+        for d in dummy.columns:
+            col_name = "{}_{}".format(var, d)
+            df[col_name] = dummy[d]
     return df 
 
 def flag_to_dummy(df, attribute_lst, rename=True):

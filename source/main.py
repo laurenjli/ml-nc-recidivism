@@ -47,8 +47,10 @@ def preprocess(df, variables=config.VARIABLES):
     for attribute in variables['MISSING']['MISSING_CAT']:
         df = pp.impute_missing(df, attribute)
 
-    for attribute in variables['MISSING']['IMPUTE_MEAN']:
-        df = pp.na_fill_col(df, attribute, np.mean)
+    for attribute in variables['MISSING']['INCARCERATION']:
+        offense_col = 'PRIMARY_OFFENSE_CODE'
+        pen_col = 'SENTENCING_PENALTY_CLASS_CODE'
+        df = pp.impute_with_2cols(df, offense_col, pen_col, attribute)
 
     for attribute in variables['MISSING']['IMPUTE_ZERO']:
         df = pp.impute_missing(df, attribute, 0)
