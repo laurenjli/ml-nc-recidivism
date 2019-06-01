@@ -100,7 +100,7 @@ def impute_with_2cols(df, year_col, pen_col, target_col):
         #print(year)
         #print(pen_class)
         tmp = df[(df[year_col] == year) & (df[pen_col] == pen_class)]
-        print(tmp)
+        #print(tmp)
         return np.mean(tmp[target_col])
     
     # create binary missing column 
@@ -245,7 +245,7 @@ def categorical_to_dummy(df, attribute_lst):
     ''' 
 
     for var in attribute_lst:
-        df = pd.get_dummies(df, columns=[var], dummy_na=True)
+        df = pd.get_dummies(df, columns=[var], dummy_na=False)
     return df
 
 def flag_to_dummy(df, attribute_lst, rename=True):

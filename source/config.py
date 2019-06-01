@@ -41,17 +41,20 @@ VARIABLES = {
                                          'AVG_SENT_LAST5YR'],
              'CATEGORICAL_VARS' : ['COUNTY_CONVICTION', 'MINMAXTERM', 'INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
                                    'PREFIX'],
-             'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE', 'SENTENCE_YEAR'],
+             'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE', 'LABEL','SENTENCE_YEAR', 'COUNTY_CONVICTION', 'MINMAXTERM', 'INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
+                                   'PREFIX'],
              'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL']
              }
 
 
 ## RUNNING THE MODELS
 GRIDSIZE = 'test'
-MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
+MODELS = ['DT']
+#MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
+PLOT = True
 
 
 def define_clfs_params(grid_size):
