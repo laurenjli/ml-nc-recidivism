@@ -163,7 +163,7 @@ def add_all_features(database_path = config.DATABASE_FILENAME):
     LEFT JOIN countyconviction as t11
     ON l.ID = t11.ID AND l.PREFIX = t11.PREFIX
     LEFT JOIN num_sent as t12
-    ON l.ID = t12.ID AND l.PREFIX = t12.PREFIX)
+    ON l.ID = t12.ID AND l.PREFIX = t12.PREFIX
     """,)
     create_ft_table(database_path, table_names, insert_query)
 
