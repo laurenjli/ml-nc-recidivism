@@ -569,7 +569,7 @@ def plot_bias(model_name, bias_df, bias_metrics = ['ppr','pprev','fnr','fpr', 'f
     p = aqp.plot_group_metric_all(xtab, metrics=bias_metrics, ncols=n, min_group_size = min_group_size)
     if output_type == 'save':
         pltfile = os.path.join(config.GRAPH_FOLDER,model_name)
-        plt.savefig(pltfile)
+        p.savefig(pltfile)
     elif output_type == 'show':
         plt.show()
     return
