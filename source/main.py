@@ -25,7 +25,7 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
         test_csv = os.path.join(data_dir, "test_{}_test.csv".format(year))
         train_csv = os.path.join(data_dir, "test_{}_train.csv".format(year))
         
-        if not os.path.exists(test_csv) or os.path.exists(train_csv):
+        if not os.path.exists(test_csv) or not os.path.exists(train_csv):
             print('Creating training and test sets')
             tt.full_traintest() 
 
@@ -36,45 +36,45 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
 
         # changing data type to date
         for df in [df_test,  df_train]:
-            pp.to_date(df, VARIABLES['DATES'])
+            pp.to_date(df, variables['DATES'])
         # create year of sentence column for future imputation
             df['SENTENCE_YEAR'] = df['START_DATE'].dt.year
 
             ## outliers
 
             ## create missing indicators
-            for fill in VARIABLES['INDICATOR']:
-                attributes = VARIABLES['INDICATOR'][fill]
+            for fill in variables['INDICATOR']:
+                attributes = variables['INDICATOR'][fill]
                 for attr in attribute:
                     if attr == 'INCARCERATION_LEN_DAYS':
                         df[attr] = df[attr].where(df[attr]>=0)   # replace neg values with nulls
                     df = pp.create_indicator(df, attr, fill)
             
             ## missing imputation
-            for attribute in VARIABLES['MISSING']['AGE']:
+            for attribute in variables['MISSING']['AGE']:
                 year_col = 'SENTENCE_YEAR'
                 pen_col = 'INMATE_RACE_CODE'
                 df = pp.impute_with_2cols(df, year_col, pen_col, attribute)
             
-            for attribute in VARIABLES['MISSING']['MISSING_CAT']:
+            for attribute in variables['MISSING']['MISSING_CAT']:
                 df = pp.impute_missing(df, attribute)
 
-            for attribute in VARIABLES['MISSING']['IMPUTE_MEAN']:
+            for attribute in variables['MISSING']['IMPUTE_MEAN']:
                 df = pp.na_fill_col(df, attribute)
 
             ## discretization
 
             ## dummy
-            for attribute in VARIABLES['CATEGORICAL_VARS']:
+            for attribute in variables['CATEGORICAL_VARS']:
                 if attribute == 'MINMAXTERM':
                     r = {'MAX.TERM:,MIN.TERM:': 'MIN.TERM:,MAX.TERM:'}
                     df['MINMAXTERM'] = df['MINMAXTERM'].replace(r)
 
-            pp.categorical_to_dummy(df, VARIABLES['CATEGORICAL_VARS'])
+            pp.categorical_to_dummy(df, variables['CATEGORICAL_VARS'])
 
         #scaling continuous variable
         scaler = MinMaxScaler()
-        for attribute in VARIABLES['CONTINUOUS_VARS_MINMAX']:
+        for attribute in variables['CONTINUOUS_VARS_MINMAX']:
             data_for_fitting = df_train[attribute].values.reshape(-1,1)
             s = scaler.fit(data_for_fitting)
             df_train[attribute] = scaler.transform(df_train[attribute].values.reshape(-1, 1))

@@ -45,7 +45,7 @@ def temporal_validation(csv_name, train_start_year, test_start_year, time_period
 
     gettinglabels.query_db(train_query, train_args, config.DATABASE_FILENAME, 
                            table_name='traindata', new_table=True, 
-                           csv_filename=config.DATA_DIR + csv_name + '_train.csv')
+                           csv_filename=config.DATA_DIR + '/'+csv_name + '_train.csv')
     print("created {} train set".format(csv_name))
 
     test_query = """
@@ -56,7 +56,7 @@ def temporal_validation(csv_name, train_start_year, test_start_year, time_period
         
     gettinglabels.query_db(test_query, test_args, config.DATABASE_FILENAME, 
                            table_name='testdata', new_table=True, 
-                           csv_filename=config.DATA_DIR + csv_name+ '_test.csv')
+                           csv_filename=config.DATA_DIR + '/'+csv_name+ '_test.csv')
     print("created {} test set".format(csv_name))
 
 
@@ -86,7 +86,12 @@ def full_traintest(time_period=365.0):
         test_year += 1
 
 if __name__ == '__main__':
-    full_traintest()
+    #full_traintest()
+    time_period = 365.0
+    test_year=1997
+    while test_year <= 2018:
+        temporal_validation('test_'+ str(test_year), train_start_year=1995, test_start_year=test_year, time_period=time_period)
+        test_year += 1
 
 
 
