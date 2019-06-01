@@ -124,10 +124,8 @@ def add_all_features(database_path = config.DATABASE_FILENAME):
         t4.AGE_AT_OFFENSE_END,
         t4.AGE_FIRST_SENTENCE,
         t5.TOTAL_SENT_ALLPRIOR, 
-        t5.NUM_PREV_SENT_ALLPRIOR,
         t5.AVG_SENT_ALLPRIOR,
         t6.TOTAL_SENT_LAST5YR,
-        t6.NUM_PREV_SENT_LAST5YR,
         t6.AVG_SENT_LAST5YR,
         t7.INCARCERATION_LEN_DAYS,
         t8.TOTAL_INCARCERATION_ALLPRIOR,
@@ -261,7 +259,6 @@ def add_num_sentences(database_path=config.DATABASE_FILENAME):
         SELECT
         a.ID, a.PREFIX, a.START_DATE, a.END_DATE,
         sum(b.NUM_SENTENCES) as TOTAL_SENT_ALLPRIOR,
-        count(*) as NUM_PREV_SENT_ALLPRIOR,
         sum(b.NUM_SENTENCES)/count(*) as AVG_SENT_ALLPRIOR 
         FROM num_sent as a join num_sent as b on a.ID=b.ID
         WHERE b.END_DATE <= a.END_DATE 
@@ -271,7 +268,6 @@ def add_num_sentences(database_path=config.DATABASE_FILENAME):
         SELECT
         a.ID, a.PREFIX, a.START_DATE, a.END_DATE,
         sum(b.NUM_SENTENCES) as TOTAL_SENT_LAST5YR,
-        count(*) as NUM_PREV_SENT_LAST5YR,
         sum(b.NUM_SENTENCES)/count(*) as AVG_SENT_LAST5YR  
         FROM num_sent as a join num_sent as b on a.ID=b.ID 
         WHERE julianday(b.END_DATE) >= (julianday(a.END_DATE) - 1825) 

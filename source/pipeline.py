@@ -248,7 +248,9 @@ def categorical_to_dummy(df, attribute_lst):
     ''' 
 
     for var in attribute_lst:
+        tmp = df[var]
         df = pd.get_dummies(df, columns=[var], dummy_na=False)
+        df.loc[:,var] = tmp
     return df
 
 def categorical_to_dummy_with_groupconcat(df, attribute_lst):
@@ -409,6 +411,24 @@ def scores_pctpop(pred_scores, pct_pop):
     pred_df.iloc[idx] = 1
     
     return pred_df
+
+def pred_at_level(y_true, y_scores, level):
+    '''
+    This function takes the predicted score and converts it into label 1 or 0
+    based on the level -percentage of observations- decided to include, e.i. label 1. 
+    Input:
+        y_true: np.array with the observed Ys 
+        y_scores: np.array with the predicted scores 
+        level: percentage of the population labeled 1
+    Output:
+        The predicted label {0, 1}
+    '''
+    
+    idx = np.argsort(np.array(y_scores))[::-1]
+    y_scores, y_true = np.array(y_scores)[idx], np.array(y_true)[idx]
+    cutoff_index = int(len(y_scores) * (level / 100.0))
+    y_preds_at_level = [1 if x < cutoff_index else 0 for x in range(len(y_scores))]
+    return y_true, y_preds_at_level
 
 
 metrics = { 'accuracy':accuracy_at_threshold,
@@ -605,10 +625,13 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
 
             # plot bias metrics if desired
             if compute_bias:
-                bias_df['id'] = bias_df['ID']
-                bias_df['score'] = scores_pctpop(y_pred_prob, config.POP_THRESHOLD)
-                bias_df['label_value'] = bias_df[label]
-                bias_df = test_set.loc[:, bias_lst]
+                tmp = test_set.copy()
+                tmp['id'] = tmp['ID']
+                tmp['score'] = scores_pctpop(y_pred_prob, config.POP_THRESHOLD)
+                tmp['label_value'] = tmp[label]
+                bias_df = tmp.loc[:, bias_lst]
+                print(bias_df.columns)
+                bias_df.to_csv('bias.csv')
                 model_name = 'BIAS_{}_{}_{}'.format(year, model, parameters)
                 plot_bias(model_name, bias_df, bias_metrics = bias_dict['metrics'], 
                     min_group_size = bias_dict['min_group_size'], output_type = 'save')

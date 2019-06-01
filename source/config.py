@@ -26,8 +26,8 @@ VARIABLES = {
                           'IMPUTE_MEAN': ['INCARCERATION_LEN_DAYS','TOTAL_INCARCERATION_ALLPRIOR', 
                                           'AVG_INCARCERATION_ALLPRIOR', 'TOTAL_INCARCERATION_LAST5YR', 
                                           'AVG_INCARCERATION_LAST5YR'],
-                          'IMPUTE_ZERO': ['INFRACTIONS', 'INFRACTIONS_UNIQUE', 'INFRACTIONS_GUILTY',
-                                          'INFRACTIONS_LAST_INCAR', 'INFRACTIONS_LAST_INCAR_GUILTY']
+                          'IMPUTE_ZERO': [] #['INFRACTIONS', 'INFRACTIONS_UNIQUE', 'INFRACTIONS_GUILTY',
+                                          #'INFRACTIONS_LAST_INCAR', 'INFRACTIONS_LAST_INCAR_GUILTY']
                            },
              'INDICATOR': {'incorrect': ['INCARCERATION_LEN_DAYS'],
                            'missing': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
@@ -37,17 +37,17 @@ VARIABLES = {
                                          'TOTAL_INCARCERATION_ALLPRIOR', 'NUM_PREV_INCARCERATION_ALLPRIOR', 
                                          'AVG_INCARCERATION_ALLPRIOR','TOTAL_INCARCERATION_LAST5YR', 
                                          'NUM_PREV_INCARCERATION_LAST5YR', 'AVG_INCARCERATION_LAST5YR',
-                                         'NUM_SENTENCES', 'TOTAL_SENT_ALLPRIOR', 'NUM_PREV_SENT_ALLPRIOR', 
-                                         'AVG_SENT_ALLPRIOR', 'TOTAL_SENT_LAST5YR', 'NUM_PREV_SENT_LAST5YR', 
+                                         'NUM_SENTENCES', 'TOTAL_SENT_ALLPRIOR', 
+                                         'AVG_SENT_ALLPRIOR', 'TOTAL_SENT_LAST5YR', 
                                          'AVG_SENT_LAST5YR'],
              'CATEGORICAL_VARS' : ['MINMAXTERM','INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
                                    'PREFIX'],
              'SPECIAL_DUMMY': ['COUNTY_CONVICTION'],
              'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE', 'LABEL','SENTENCE_YEAR',
                                   'INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 
-                                  'PREFIX'],
+                                  'PREFIX', 'MINMAXTERM','COUNTY_CONVICTION'],
              'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL'],
-             'BIAS': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 'label_value', 'id', 'PREFIX', 'score'],
+             'BIAS': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 'label_value', 'id', 'score'],
              'BIAS_METRICS': {'metrics':['ppr','pprev','fnr','fpr', 'for'], 'min_group_size': None}
              }
 
