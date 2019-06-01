@@ -42,7 +42,7 @@ VARIABLES = {
                                    #'PREFIX'],
              'SPECIAL_DUMMY': ['COUNTY_CONVICTION'],
              'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE', 'LABEL','SENTENCE_YEAR', 
-                                  'COUNTY_CONVICTION', 'INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
+                                  'INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
                                   'PREFIX', 'AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END'],
              'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL']
              }
