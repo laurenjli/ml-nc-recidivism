@@ -47,6 +47,9 @@ def preprocess(df, variables=config.VARIABLES):
         df = pp.impute_missing(df, attribute)
 
     for attribute in variables['MISSING']['IMPUTE_MEAN']:
+        df = pp.na_fill_col(df, attribute, 0)
+
+    for attribute in variables['MISSING']['IMPUTE_ZERO']:
         df = pp.na_fill_col(df, attribute)
 
     ## discretization
