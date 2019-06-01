@@ -304,7 +304,7 @@ def plot_precision_recall_n(y_true, y_prob, model_name, output_type):
         output_type: (str) save or show
     '''
     y_score = y_prob
-    precision_curve, recall_curve, pr_thresholds = sklearn.metrics.precision_recall_curve(y_true, y_score)
+    precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_true, y_score)
     precision_curve = precision_curve[:-1]
     recall_curve = recall_curve[:-1]
 
@@ -574,6 +574,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
 
             if plot_pr:
                 model_name = '{}_{}_{}'.format(year, model, parameters)
+                print('plotting precision recall for {}'.format(model_name))
                 plot_precision_recall_n(y_test, y_pred_prob, model_name, plot_pr)
 
             if eval_metrics:
