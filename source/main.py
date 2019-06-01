@@ -65,7 +65,7 @@ def preprocess(df, variables=config.VARIABLES):
 def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=config.RESULTS_FILE, 
          variables=config.VARIABLES, models=config.MODELS, eval_metrics=config.EVAL_METRICS,
          eval_metrics_by_level=config.EVAL_METRICS_BY_LEVEL, grid=config.define_clfs_params(config.GRIDSIZE), 
-         period=[1997, 2018]):
+         period=[1997, 2018], plot_pr = config.PLOT_PR):
     
     first_year = period[0]
     year = period[0]
@@ -104,10 +104,10 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             if attr not in df_test.columns:
                 df_test.loc[:,attr] = 0
         print('Training set has {} features'.format(len(attributes_lst)))
-        print(attributes_lst)
+        #print(attributes_lst)
         
         # run models
-        results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst)
+        results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, year, plot_pr)
         # add year
         results[config.TRAIN_TEST_COL] = year
         # add baseline for test set

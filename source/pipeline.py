@@ -293,29 +293,50 @@ def create_indicator(df, col, indicator_name='missing'):
 ### Evaluation Metrics
 
 
-def plot_precision_recall_n(y_true, y_scores, filename=None):
+def plot_precision_recall_n(y_true, y_prob, model_name, output_type):
     '''
-    This function creates a graph that represent the precision and recall 
-    at different point of the threshold. 
-    Input:
-        y_true: np.array with the observed Ys 
-        y_scores: np.array with the predicted scores 
-    Output:
-        The graph
+    Plot precision and recall for each threshold
+
+    Inputs:
+        y_true: real labels for testing set
+        y_prob: array of predicted scores from model
+        model_name: (str) title for plot
+        output_type: (str) save or show
     '''
-    #precision, recall, tresholds = precision_recall_curve(y_test, pred_scoresp[:,1], pos_label=1)
+    y_score = y_prob
+    precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_true, y_score)
+    precision_curve = precision_curve[:-1]
+    recall_curve = recall_curve[:-1]
+
+    pct_above_per_thresh = []
+    number_scored = len(y_score)
+    for value in pr_thresholds:
+        num_above_thresh = len(y_score[y_score>=value])
+        pct_above_thresh = num_above_thresh / float(number_scored)
+        pct_above_per_thresh.append(pct_above_thresh)
+
+    pct_above_per_thresh = np.array(pct_above_per_thresh)
     
-    precision, recall, thresholds = precision_recall_curve(y_true, y_scores, pos_label=1)
-    
-    #plt.plot(recall, precision, marker='.')
-    #plt.show()
-    population = [1.*sum(y_scores>threshold)/len(y_scores) for threshold in thresholds]+[0]
-    p, = plt.plot(population, precision, color ='b')
-    r, =  plt.plot(population, recall, color ='r')
-    plt.legend([p,r],['precision', 'recall'])
-    plt.show()
-    if filename is not None:
-        plt.savefig(filename)
+    fig, ax1 = plt.subplots()
+    ax1.plot(pct_above_per_thresh, precision_curve, 'b')
+    ax1.set_xlabel('percent of population')
+    ax1.set_ylabel('precision', color='b')
+    ax2 = ax1.twinx()
+    ax2.plot(pct_above_per_thresh, recall_curve, 'r')
+    ax2.set_ylabel('recall', color='r')
+    ax1.set_ylim([0,1])
+    ax1.set_ylim([0,1])
+    ax2.set_xlim([0,1])
+
+    plt.title(model_name)
+
+    if (output_type == 'save'):
+        pltfile = os.path.join(config.GRAPH_FOLDER,model_name)
+        plt.savefig(pltfile)
+    elif (output_type == 'show'):
+        plt.show()
+    else:
+        pass
 
     
 def f1_at_threshold(y_true, y_predicted):
@@ -514,7 +535,7 @@ classifiers = { 'RF': RandomForestClassifier(n_jobs=-1, random_state=config.SEED
                 'NB': MultinomialNB(alpha=1.0)
         }
 
-def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst):
+def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, year, plot_pr = None):
     '''
     This function fits a set of classifiers and a dataframe with performance measures for each
     Input:
@@ -524,6 +545,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
         eval_metrics: list of threshold-independent metrics.
         eval_metrics_by_level: tuple containing a list of threshold-dependent metrics as first element and a list of thresholds as second element
         attributes_lst: list containing the names of the features (i.e. X variables) to be used.
+        plot_pr: 'save', 'show', or None
     Output:
         Dataframe containing performance measures for each classifier
     '''
@@ -549,6 +571,11 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 y_pred_prob = clfr.decision_function(X_test)
             else:    
                 y_pred_prob = clfr.predict_proba(X_test)[:,1]
+
+            if plot_pr:
+                model_name = '{}_{}_{}'.format(year, model, parameters)
+                print('plotting precision recall for {}'.format(model_name))
+                plot_precision_recall_n(y_test, y_pred_prob, model_name, plot_pr)
 
             if eval_metrics:
                 eval_result += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]
