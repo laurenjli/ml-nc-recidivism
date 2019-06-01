@@ -52,12 +52,8 @@ def preprocess(df, variables=config.VARIABLES):
     ## discretization
 
     ## dummy
-    for attribute in variables['SPECIAL_DUMMY']:
-        county = ft.get_unique_county()
-        for c in county:
-            filtr = df['COUNTY_CONVICTION'].str.contains(c)
-            df['COUNTY_' + c] = filtr.astype(int)
-    
+    df = pp.categorical_to_dummy_with_groupconcat(df,variables['SPECIAL_DUMMY'])
+
     for attribute in variables['CATEGORICAL_VARS']:
         if attribute == 'MINMAXTERM':
             r = {'MAX.TERM:,MIN.TERM:': 'MIN.TERM:,MAX.TERM:'}
