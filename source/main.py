@@ -6,6 +6,7 @@ import pandas as pd
 import traintestset as tt
 import datetime as dt
 import config
+import os
 
 
 
@@ -24,11 +25,12 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
         test_csv = os.path.join(data_dir, "test_{}_test.csv".format(year))
         train_csv = os.path.join(data_dir, "test_{}_train.csv".format(year))
         
-        if not os.path.exists(test_csv) and os.path.exists(train_csv):
+        if not os.path.exists(test_csv) or os.path.exists(train_csv):
+            print('Creating training and test sets')
             tt.full_traintest() 
 
-        df_test = get_csv(dir, test_set)
-        df_train = get_csv(dir, train_set)
+        df_test = pp.get_csv(test_csv)
+        df_train = pp.get_csv(train_csv)
 
         # PRE PROCESS DATA
 

@@ -33,7 +33,7 @@ import config;
 
 ## Get Data
 
-def get_csv(data_dir, file_name):
+def get_csv(f):
     '''
     Description: This function takes a csv file and uploads it into a pandas dataframe
     Input:
@@ -42,7 +42,7 @@ def get_csv(data_dir, file_name):
         pandas data frame
     '''
 
-    df = pd.read_csv(os.path.join(data_dir, file_name))
+    df = pd.read_csv(f)
     return df
 
 ## Pre-ProcessData
@@ -528,9 +528,10 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     X_test = test_set.loc[:, attributes_lst]
     for model in models:
         grid = ParameterGrid(custom_grid[model])
+        
         for parameters in grid:
             classifier = classifiers[model]
-
+            print('Running model: {}, param: {}'.format(model, parameters))
             clfr = classifier.set_params(**parameters)
             clfr.fit(X_train, y_train)
 
