@@ -246,7 +246,6 @@ def categorical_to_dummy(df, attribute_lst):
 
     for var in attribute_lst:
         df = pd.get_dummies(df, columns=[var], dummy_na=False)
-        print(df)
     return df
 
 # CHANGES
