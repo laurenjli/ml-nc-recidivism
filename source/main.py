@@ -8,6 +8,7 @@ import datetime as dt
 import config
 import os
 from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 
 import features as ft
 import warnings
@@ -47,10 +48,10 @@ def preprocess(df, variables=config.VARIABLES):
         df = pp.impute_missing(df, attribute)
 
     for attribute in variables['MISSING']['IMPUTE_MEAN']:
-        df = pp.na_fill_col(df, attribute, 0)
+        df = pp.na_fill_col(df, attribute, np.mean)
 
     for attribute in variables['MISSING']['IMPUTE_ZERO']:
-        df = pp.na_fill_col(df, attribute)
+        df = pp.impute_missing(df, attribute, 0)
 
     ## discretization
 
@@ -102,16 +103,20 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
 
         # define list of features
         attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
-        bias_lst = variables['BIAS']
+        #bias_lst = variables['BIAS']
         for attr in attributes_lst:
             if attr not in df_test.columns:
                 df_test.loc[:,attr] = 0
         print('Training set has {} features'.format(len(attributes_lst)))
         #print(attributes_lst)
+
+        # bias metrics
+        bias_lst = variables['BIAS']
+        bias_dict = variables['BIAS_METRICS']
         
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 
-            bias_lst, year, plot_pr, compute_bias)
+            bias_lst, bias_dict, year, plot_pr, compute_bias)
         # add year
         results[config.TRAIN_TEST_COL] = year
         # add baseline for test set
