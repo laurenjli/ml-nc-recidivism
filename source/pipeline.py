@@ -104,7 +104,7 @@ def impute_with_2cols(df, year_col, pen_col, target_col):
         return np.mean(tmp[target_col])
     
     # create binary missing column 
-    df = pp.missing_col(df, target_col)
+    # df = create_indicator(df, target_col)
 
     # copy dataframe to impute values then reinsert into df
     cp = df.copy()
@@ -279,7 +279,7 @@ def create_indicator(df, col, indicator_name='missing'):
     return: None
     '''
     missingcol = col + '_' + indicator_name
-    df[missingcol] = [1 if x else 0 for x in y[col].isna()]
+    df[missingcol] = [1 if x else 0 for x in df[col].isna()]
     return df
 
 
