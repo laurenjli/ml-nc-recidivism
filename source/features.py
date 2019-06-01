@@ -159,19 +159,24 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
 
     query = (
     """
-    WITH inmate_char as (
-        SELECT labels.ID, PREFIX, INMATE_GENDER_CODE, INMATE_RACE_CODE, START_DATE, END_DATE, INMATE_BIRTH_DATE,
-        CASE WHEN (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
-        THEN NULL
-        ELSE (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_START_DATE, 
-        CASE WHEN (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
-        THEN NULL
-        ELSE (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_END_DATE
+    WITH null_bday as (
+        SELECT INMATE_DOC_NUMBER, INMATE_GENDER_CODE,INMATE_RACE_CODE,
+        CASE WHEN (INMATE_BIRTH_DATE LIKE '0001%') THEN NULL
+        ELSE INMATE_BIRTH_DATE END AS INMATE_BIRTH_DATE
         FROM
-        labels LEFT JOIN INMT4AA1
-        ON INMT4AA1.INMATE_DOC_NUMBER = labels.ID
+        INMT4AA1
     )
-    SELECT * from inmate_char
+    SELECT ID, PREFIX, START_DATE, END_DATE,INMATE_GENDER_CODE, INMATE_RACE_CODE, INMATE_BIRTH_DATE,
+    CASE WHEN (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
+    THEN NULL
+    ELSE (julianday(START_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_START_DATE, 
+    CASE WHEN (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 < 0
+    THEN NULL
+    ELSE (julianday(END_DATE) - julianday(INMATE_BIRTH_DATE))/365.0 END as AGE_AT_END_DATE
+    FROM
+    labels LEFT JOIN null_bday
+    ON null_bday.INMATE_DOC_NUMBER = labels.ID
+
     """,)
     table_names = ['inmate_char']
     create_ft_table(database_path, table_names, query)

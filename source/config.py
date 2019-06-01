@@ -41,7 +41,7 @@ VARIABLES = {
                                          'AVG_SENT_LAST5YR'],
              'CATEGORICAL_VARS' : ['COUNTY_CONVICTION', 'MINMAXTERM', 'INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
                                    'PREFIX'],
-             'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE'],
+             'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE', 'SENTENCE_YEAR'],
              'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL']
              }
 

@@ -4,6 +4,7 @@
 import pipeline as pp
 import pandas as pd
 import traintestset as tt
+import datetime as dt
 import config
 
 
@@ -29,13 +30,17 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
         df_test = get_csv(dir, test_set)
         df_train = get_csv(dir, train_set)
 
+        # PRE PROCESS DATA
+
+        # changing data type to date
         for df in [df_test,  df_train]:
-            # changing data type
             pp.to_date(df, VARIABLES['DATES'])
+        # create year of sentence column for future imputation
+            df['SENTENCE_YEAR'] = df['START_DATE'].dt.year
 
             ## outliers
 
-            ## create indicators
+            ## create missing indicators
             for fill in VARIABLES['INDICATOR']:
                 attributes = VARIABLES['INDICATOR'][fill]
                 for attr in attribute:
@@ -45,6 +50,8 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             
             ## missing imputation
             for attribute in VARIABLES['MISSING']['AGE']:
+                year_col = 'SENTENCE_YEAR'
+                pen_col = 'INMATE_RACE_CODE'
                 df = pp.impute_with_2cols(df, year_col, pen_col, attribute)
             
             for attribute in VARIABLES['MISSING']['MISSING_CAT']:
@@ -71,15 +78,17 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             df_train[attribute] = scaler.transform(df_train[attribute].values.reshape(-1, 1))
             df_test[attribute] = scaler.transform(df_test[attribute].values.reshape(-1, 1))
 
-
+        # define list of features
         attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
         for attr in attributes_lst:
             if attr not in df_train.columsn:
                 df_test.loc[:,c] = 0
 
+        # run models
         results = classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst)
         results[config.TRAIN_TEST_COL] = year
 
+        # save results
         if year == first_year:
             results.to_csv(os.path.join(results_dir, results_file), index=False)
         else:

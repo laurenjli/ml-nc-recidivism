@@ -244,15 +244,15 @@ def impute_age(df, year_col, pen_col, target_col):
 if __name__ == '__main__':
     add_num_sentences()
     #testing impute_age()
-    # x = [{'year': 1995, 'penalty': 1, 'age': 25, 'race': 'Black'},
-    #     {'year': 1995, 'penalty': 1, 'age': 27, 'race': 'Asian'},
-    #     {'year': 1995, 'penalty': 1, 'age': None, 'race': 'White'},
-    #     {'year': 1997, 'penalty': 2, 'age': 25, 'race': None},
-    #     {'year': 1997, 'penalty': 2, 'age': 30, 'race': None},
-    #     {'year': 1997, 'penalty': 2, 'age': None, 'race': 'Indian'}]
-    # y = pd.DataFrame(x)
-    # z=impute_age(y, 'year', 'penalty', 'age')
-    # print(z)
+    x = [{'year': '1995-01-01', 'penalty': 1, 'age': 25, 'race': 'Black'},
+        {'year': '1995-01-01', 'penalty': 1, 'age': 27, 'race': 'Asian'},
+        {'year': '1995-01-01', 'penalty': 1, 'age': None, 'race': 'White'},
+        {'year': '1995-01-01', 'penalty': 2, 'age': 25, 'race': None},
+        {'year': '1995-01-01', 'penalty': 2, 'age': 30, 'race': None},
+        {'year': '1995-01-01', 'penalty': 2, 'age': None, 'race': 'Indian'}]
+    y = pd.DataFrame(x)
+    z=impute_age(y, 'year', 'penalty', 'age')
+    print(z)
 
     # a = impute_race(z, 'race')
     # print(a)
