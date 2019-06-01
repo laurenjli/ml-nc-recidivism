@@ -520,7 +520,8 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     Output:
         Dataframe containing performance measures for each classifier
     '''
-    results_columns = ['model','classifiers', 'parameters'] + eval_metrics + [metric + '_' + str(level) for level in eval_metrics_by_level[1] for metric in eval_metrics_by_level[0]]
+    results_columns = (['model','classifiers', 'parameters', 'train_set_size', 'validation_set_size','features'] + eval_metrics + 
+                      [metric + '_' + str(level) for level in eval_metrics_by_level[1] for metric in eval_metrics_by_level[0]])
     results =  pd.DataFrame(columns=results_columns)
     y_train = train_set[label]
     X_train = train_set.loc[:, attributes_lst]
@@ -535,7 +536,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             clfr = classifier.set_params(**parameters)
             clfr.fit(X_train, y_train)
 
-            eval_result = [model, classifier, parameters]
+            eval_result = [model, classifier, parameters, len(X_train), len(X_test), attributes_lst]
 
             if isinstance(clfr, LinearSVC):
                 y_pred_prob = clfr.decision_function(X_test)
