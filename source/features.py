@@ -135,7 +135,7 @@ def add_all_features(database_path = config.DATABASE_FILENAME):
         t11.INFRACTIONS_UNIQUE,
         t11.INFRACTIONS_GUILTY,
         t11.INFRACTIONS_LAST_INCAR,
-        t11.INFRACTIONS_LAST_INCAR_GUILTY
+        t11.INFRACTIONS_LAST_INCAR_GUILTY,
         t11.PRIMARY_OFFENSE_CODE,
         t11.OFFENSE_QUALIFIER_CODE,
         t11.SENTENCING_PENALTY_CLASS_CODE
@@ -162,7 +162,6 @@ def add_all_features(database_path = config.DATABASE_FILENAME):
                                             (totcntavg_incarceration_last5yr
                                             LEFT JOIN
                                                 (minmaxterm NATURAL JOIN countyconviction) as t1
-
                                             ON totcntavg_incarceration_last5yr.ID = t1.ID AND totcntavg_incarceration_last5yr.PREFIX = t1.PREFIX) as t2
                                         ON totcntavg_incarceration_allprior.ID = t2.ID AND totcntavg_incarceration_allprior.PREFIX = t2.PREFIX) as t3
                                     ON incarceration_len.ID = t3.ID AND incarceration_len.PREFIX = t3.PREFIX) as t4
@@ -174,11 +173,8 @@ def add_all_features(database_path = config.DATABASE_FILENAME):
             ON offense_penalty.ID = t9.ID AND offense_penalty.PREFIX = t9.PREFIX) AS t10
         ON infractions.ID = t10.ID AND infractions.PREFIX = t10.PREFIX) AS t11
     ON labels.ID = t11.ID AND labels.PREFIX = t11.PREFIX)
-
     """,)
     create_ft_table(database_path, table_names, insert_query)
-
-
 
 ## Age, race, age
 
