@@ -20,16 +20,16 @@ VARIABLES = {
              'LABEL' : 'LABEL',
 #             'TO_DISCRETIZE' : [{'NUM_SENTENCES': (3, ['low','medium','high'])}],
              'DATES' : ['START_DATE', 'END_DATE'],
-             'MISSING' : {'MISSING_CAT': [], #['INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
-                          'AGE': [], #['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
-                                  #'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END'],
+             'MISSING' : {'MISSING_CAT': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
+                          'AGE': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
+                                  'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END'],
                           'IMPUTE_MEAN': ['INCARCERATION_LEN_DAYS','TOTAL_INCARCERATION_ALLPRIOR', 
                                           'AVG_INCARCERATION_ALLPRIOR', 'TOTAL_INCARCERATION_LAST5YR', 
                                           'AVG_INCARCERATION_LAST5YR']
                            },
              'INDICATOR': {'incorrect': ['INCARCERATION_LEN_DAYS'],
-                           #'missing': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
-                           #            'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END']
+                           'missing': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
+                                       'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END']
                            },
              'CONTINUOUS_VARS_MINMAX' : ['INCARCERATION_LEN_DAYS',
                                          'TOTAL_INCARCERATION_ALLPRIOR', 'NUM_PREV_INCARCERATION_ALLPRIOR', 
@@ -38,12 +38,12 @@ VARIABLES = {
                                          'NUM_SENTENCES', 'TOTAL_SENT_ALLPRIOR', 'NUM_PREV_SENT_ALLPRIOR', 
                                          'AVG_SENT_ALLPRIOR', 'TOTAL_SENT_LAST5YR', 'NUM_PREV_SENT_LAST5YR', 
                                          'AVG_SENT_LAST5YR'],
-             'CATEGORICAL_VARS' : ['MINMAXTERM'], #'INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
+             'CATEGORICAL_VARS' : ['MINMAXTERM','INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
                                    #'PREFIX'],
              'SPECIAL_DUMMY': ['COUNTY_CONVICTION'],
              'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE', 'LABEL','SENTENCE_YEAR',
                                   'INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 
-                                  'PREFIX', 'AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END'],
+                                  'PREFIX'],
              'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL']
              }
 
