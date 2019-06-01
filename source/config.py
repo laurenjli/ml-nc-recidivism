@@ -47,7 +47,8 @@ VARIABLES = {
                                   'INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 
                                   'PREFIX'],
              'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL'],
-             'BIAS': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 'label_value', 'id', 'PREFIX', 'score']
+             'BIAS': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 'label_value', 'id', 'PREFIX', 'score'],
+             'BIAS_METRICS': {'metrics':['ppr','pprev','fnr','fpr', 'for'], 'min_group_size': None}
              }
 
 

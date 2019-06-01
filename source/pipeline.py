@@ -535,15 +535,25 @@ classifiers = { 'RF': RandomForestClassifier(n_jobs=-1, random_state=config.SEED
                 'NB': MultinomialNB(alpha=1.0)
         }
 
-def plot_bias(bias_df, bias_metrics = ['ppr','pprev','fnr','fpr']):
+def plot_bias(model_name, bias_df, bias_metrics = ['ppr','pprev','fnr','fpr', 'for'], min_group_size = None, output_type = None):
     '''
+    This function creates bar charts for bias metrics given.
+
+    bias_df = dataframe with ID, label, predicted scores already taking into account the population threshold, and 
     '''
     g = Group()
     xtab, _ = g.get_crosstabs(bias_df)
     aqp = Plot()
-    p = aqp.plot_group_metric_all(xtab, metrics=['ppr','pprev','fnr','fpr'], ncols=4, min_group_size = None)
+    n = len(bias_metrics)
+    p = aqp.plot_group_metric_all(xtab, metrics=bias_metrics, ncols=n, min_group_size = min_group_size)
+    if output_type == 'save':
+        pltfile = os.path.join(config.GRAPH_FOLDER,model_name)
+        plt.savefig(pltfile)
+    elif output_type == 'show':
+        plt.show()
+    return
 
-def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, year,
+def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, bias_dict, year,
     plot_pr = None, compute_bias =False):
     '''
     This function fits a set of classifiers and a dataframe with performance measures for each
@@ -599,10 +609,9 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 bias_df['score'] = scores_pctpop(y_pred_prob, config.POP_THRESHOLD)
                 bias_df['label_value'] = bias_df[label]
                 bias_df = test_set.loc[:, bias_lst]
-                # g = Group()
-                # xtab, _ = g.get_crosstabs(bias_df)
-                # aqp = Plot()
-                # p = aqp.plot_group_metric_all(xtab, metrics=['ppr','pprev','fnr','fpr'], ncols=4, min_group_size = None)
+                model_name = 'BIAS_{}_{}_{}'.format(year, model, parameters)
+                plot_bias(model_name, bias_df, bias_metrics = bias_dict['metrics'], 
+                    min_group_size = bias_dict['min_group_size'], output_type = 'save')
 
             if eval_metrics:
                 eval_result += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]
