@@ -107,72 +107,63 @@ def add_all_features(database_path = config.DATABASE_FILENAME):
     #add them all into a sql table called "Data"
     table_names = ['data']
     insert_query = ("""
-    SELECT labels.ID, labels.PREFIX, labels.START_DATE, labels.END_DATE, labels.LABEL, 
-        t11.INMATE_RACE_CODE, 
-        t11.INMATE_GENDER_CODE, 
-        t11.AGE_AT_START_DATE, 
-        t11.AGE_AT_END_DATE,
-        t11.AGE_AT_OFFENSE_START,
-        t11.AGE_AT_OFFENSE_END,
-        t11.AGE_FIRST_SENTENCE,
-        t11.NUM_SENTENCES,
-        t11.TOTAL_SENT_ALLPRIOR, 
-        t11.NUM_PREV_SENT_ALLPRIOR,
-        t11.AVG_SENT_ALLPRIOR,
-        t11.TOTAL_SENT_LAST5YR,
-        t11.NUM_PREV_SENT_LAST5YR,
-        t11.AVG_SENT_LAST5YR,
-        t11.INCARCERATION_LEN_DAYS,
-        t11.TOTAL_INCARCERATION_ALLPRIOR,
-        t11.NUM_PREV_INCARCERATION_ALLPRIOR,
-        t11.AVG_INCARCERATION_ALLPRIOR,
-        t11.TOTAL_INCARCERATION_LAST5YR, 
-        t11.NUM_PREV_INCARCERATION_LAST5YR, 
-        t11.AVG_INCARCERATION_LAST5YR,
-        t11.MINMAXTERM, 
+    SELECT l.ID, l.PREFIX, l.START_DATE, l.END_DATE, l.LABEL, 
+        t1.INFRACTIONS,
+        t1.INFRACTIONS_UNIQUE,
+        t1.INFRACTIONS_GUILTY,
+        t1.INFRACTIONS_LAST_INCAR,
+        t1.INFRACTIONS_LAST_INCAR_GUILTY,
+        t2.PRIMARY_OFFENSE_CODE,
+        t2.OFFENSE_QUALIFIER_CODE,
+        t2.SENTENCING_PENALTY_CLASS_CODE,
+        t3.INMATE_RACE_CODE, 
+        t3.INMATE_GENDER_CODE, 
+        t3.AGE_AT_START_DATE, 
+        t3.AGE_AT_END_DATE,
+        t4.AGE_AT_OFFENSE_START,
+        t4.AGE_AT_OFFENSE_END,
+        t4.AGE_FIRST_SENTENCE,
+        t5.TOTAL_SENT_ALLPRIOR, 
+        t5.NUM_PREV_SENT_ALLPRIOR,
+        t5.AVG_SENT_ALLPRIOR,
+        t6.TOTAL_SENT_LAST5YR,
+        t6.NUM_PREV_SENT_LAST5YR,
+        t6.AVG_SENT_LAST5YR,
+        t7.INCARCERATION_LEN_DAYS,
+        t8.TOTAL_INCARCERATION_ALLPRIOR,
+        t8.NUM_PREV_INCARCERATION_ALLPRIOR,
+        t8.AVG_INCARCERATION_ALLPRIOR,
+        t9.TOTAL_INCARCERATION_LAST5YR, 
+        t9.NUM_PREV_INCARCERATION_LAST5YR, 
+        t9.AVG_INCARCERATION_LAST5YR,
+        t10.MINMAXTERM, 
         t11.COUNTY_CONVICTION, 
-        t11.INFRACTIONS,
-        t11.INFRACTIONS_UNIQUE,
-        t11.INFRACTIONS_GUILTY,
-        t11.INFRACTIONS_LAST_INCAR,
-        t11.INFRACTIONS_LAST_INCAR_GUILTY,
-        t11.PRIMARY_OFFENSE_CODE,
-        t11.OFFENSE_QUALIFIER_CODE,
-        t11.SENTENCING_PENALTY_CLASS_CODE
-    FROM
-    (labels LEFT JOIN
-        (infractions
-        LEFT JOIN
-            (offense_penalty
-            LEFT JOIN
-                (inmate_char
-                LEFT JOIN
-                    (age_features
-                    LEFT JOIN
-                        (num_sent
-                            LEFT JOIN
-                            (totcntavg_sentences_allprior
-                            LEFT JOIN
-                                (totcntavg_sentences_last5yr
-                                LEFT JOIN
-                                    (incarceration_len
-                                    LEFT JOIN
-                                        (totcntavg_incarceration_allprior
-                                        LEFT JOIN 
-                                            (totcntavg_incarceration_last5yr
-                                            LEFT JOIN
-                                                (minmaxterm NATURAL JOIN countyconviction) as t1
-                                            ON totcntavg_incarceration_last5yr.ID = t1.ID AND totcntavg_incarceration_last5yr.PREFIX = t1.PREFIX) as t2
-                                        ON totcntavg_incarceration_allprior.ID = t2.ID AND totcntavg_incarceration_allprior.PREFIX = t2.PREFIX) as t3
-                                    ON incarceration_len.ID = t3.ID AND incarceration_len.PREFIX = t3.PREFIX) as t4
-                                ON totcntavg_sentences_last5yr.ID = t4.ID AND totcntavg_sentences_last5yr.PREFIX = t4.PREFIX) as t5
-                            ON totcntavg_sentences_allprior.ID = t5.ID AND totcntavg_sentences_allprior.PREFIX = t5.PREFIX) as t6
-                        ON num_sent.ID = t6.ID AND num_sent.PREFIX = t6.PREFIX) as t7
-                    ON age_features.ID = t7.ID AND age_features.PREFIX = t7.PREFIX) as t8
-                ON inmate_char.ID = t8.ID AND inmate_char.PREFIX = t8.PREFIX) as t9
-            ON offense_penalty.ID = t9.ID AND offense_penalty.PREFIX = t9.PREFIX) AS t10
-        ON infractions.ID = t10.ID AND infractions.PREFIX = t10.PREFIX) AS t11
-    ON labels.ID = t11.ID AND labels.PREFIX = t11.PREFIX)
+        t12.NUM_SENTENCES
+    FROM labels as l
+    LEFT JOIN infractions as t1
+    ON l.ID = t1.ID AND l.PREFIX = t1.PREFIX
+    LEFT JOIN offense_penalty AS t2
+    ON l.ID = t2.ID AND l.PREFIX = t2.PREFIX 
+    LEFT JOIN inmate_char AS t3
+    ON l.ID = t3.ID AND l.PREFIX = t3.PREFIX
+    LEFT JOIN age_features as t4
+    ON l.ID = t4.ID AND l.PREFIX = t4.PREFIX
+    LEFT JOIN totcntavg_sentences_allprior as t5
+    ON l.ID = t5.ID AND l.PREFIX = t5.PREFIX
+    LEFT JOIN totcntavg_sentences_last5yr as t6
+    ON l.ID = t6.ID AND l.PREFIX = t6.PREFIX
+    LEFT JOIN incarceration_len as t7
+    ON l.ID = t7.ID AND l.PREFIX = t7.PREFIX
+    LEFT JOIN totcntavg_incarceration_allprior as t8
+    ON l.ID = t8.ID AND l.PREFIX = t8.PREFIX
+    LEFT JOIN totcntavg_incarceration_last5yr as t9
+    ON l.ID = t9.ID AND l.PREFIX = t9.PREFIX
+    LEFT JOIN minmaxterm as t10
+    ON l.ID = t10.ID AND l.PREFIX = t10.PREFIX
+    LEFT JOIN countyconviction as t11
+    ON l.ID = t11.ID AND l.PREFIX = t11.PREFIX
+    LEFT JOIN num_sent as t12
+    ON l.ID = t12.ID AND l.PREFIX = t12.PREFIX)
     """,)
     create_ft_table(database_path, table_names, insert_query)
 
@@ -429,9 +420,9 @@ def add_offense_penalty(database_path=config.DATABASE_FILENAME):
     SELECT
         l.ID, 
         l.PREFIX,
-        GROUP_CONCAT(distinct REPLACE(PRIMARY_OFFENSE_CODE, ',', '')) as PRIMARY_OFFENSE_CODE,
-        GROUP_CONCAT(distinct REPLACE(OFFENSE_QUALIFIER_CODE, ',', '')) as OFFENSE_QUALIFIER_CODE,
-        GROUP_CONCAT(distinct REPLACE(SENTENCING_PENALTY_CLASS_CODE, ',', '')) as SENTENCING_PENALTY_CLASS_CODE
+        GROUP_CONCAT(distinct REPLACE(o.PRIMARY_OFFENSE_CODE, ',', '')) as PRIMARY_OFFENSE_CODE,
+        GROUP_CONCAT(distinct REPLACE(o.OFFENSE_QUALIFIER_CODE, ',', '')) as OFFENSE_QUALIFIER_CODE,
+        GROUP_CONCAT(distinct REPLACE(o.SENTENCING_PENALTY_CLASS_CODE, ',', '')) as SENTENCING_PENALTY_CLASS_CODE
     FROM labels as l
     LEFT JOIN OFNT3CE1 as o
     ON l.ID == o.OFFENDER_NC_DOC_ID_NUMBER 
