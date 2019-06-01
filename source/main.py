@@ -101,8 +101,8 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
         attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
 
         for attr in attributes_lst:
-            if attr not in df_train.columns:
-                df_test.loc[:,c] = 0
+            if attr not in df_test.columns:
+                df_test.loc[:,attr] = 0
         print('Training set has {} features'.format(len(attributes_lst)))
         print(attributes_lst)
         
