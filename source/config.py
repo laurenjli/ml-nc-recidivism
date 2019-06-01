@@ -39,12 +39,19 @@ VARIABLES = {
                                          'NUM_PREV_INCARCERATION_LAST5YR', 'AVG_INCARCERATION_LAST5YR',
                                          'NUM_SENTENCES', 'TOTAL_SENT_ALLPRIOR', 'NUM_PREV_SENT_ALLPRIOR', 
                                          'AVG_SENT_ALLPRIOR', 'TOTAL_SENT_LAST5YR', 'NUM_PREV_SENT_LAST5YR', 
+<<<<<<< HEAD
                                          'AVG_SENT_LAST5YR', 'INFRACTIONS', 'INFRACTIONS_UNIQUE', 'INFRACTIONS_GUILTY',
                                          'INFRACTIONS_LAST_INCAR', 'INFRACTIONS_LAST_INCAR_GUILTY'],
              'CATEGORICAL_VARS' : ['MINMAXTERM','INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
                                    #'PREFIX'],
              'SPECIAL_DUMMY': ['COUNTY_CONVICTION', 'PRIMARY_OFFENSE_CODE', 'OFFENSE_QUALIFIER_CODE',
                                 'SENTENCING_PENALTY_CLASS_CODE'],
+=======
+                                         'AVG_SENT_LAST5YR'],
+             'CATEGORICAL_VARS' : ['MINMAXTERM','INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
+                                   'PREFIX'],
+             'SPECIAL_DUMMY': ['COUNTY_CONVICTION'],
+>>>>>>> 9bb4990ee2ea15cee7313697691c2b11ae44ccdd
              'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE', 'LABEL','SENTENCE_YEAR',
                                   'INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 
                                   'PREFIX'],
