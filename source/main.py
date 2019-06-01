@@ -9,6 +9,7 @@ import config
 import os
 from sklearn.preprocessing import MinMaxScaler
 
+import features as ft
 import warnings
 warnings.filterwarnings('ignore')
 
@@ -51,11 +52,17 @@ def preprocess(df, variables=config.VARIABLES):
     ## discretization
 
     ## dummy
+    for attribute in variables['SPECIAL_DUMMY']:
+        county = ft.get_unique_county()
+        for c in county:
+            filtr = df['COUNTY_CONVICTION'].str.contains(c)
+            df['COUNTY_' + c] = filtr.astype(int)
+    
     for attribute in variables['CATEGORICAL_VARS']:
         if attribute == 'MINMAXTERM':
             r = {'MAX.TERM:,MIN.TERM:': 'MIN.TERM:,MAX.TERM:'}
             df['MINMAXTERM'] = df['MINMAXTERM'].replace(r)
-
+            
     return pp.categorical_to_dummy(df, variables['CATEGORICAL_VARS'])
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):

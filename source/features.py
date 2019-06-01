@@ -2,8 +2,7 @@ import pandas as pd
 import gettinglabels
 import sqlite3
 import pipeline as pp
-
-DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
+import config
 
 
 ## FEATURE GENERATION TABLES ##
@@ -30,7 +29,7 @@ def build_index(database_path, query):
         print('index done')
     con.close()
 
-def create_index_incarcerationlen(database_path=DATABASE_FILENAME):
+def create_index_incarcerationlen(database_path=config.DATABASE_FILENAME):
     '''
     Building an index on incarceration_len table to improve perf
     '''
@@ -48,7 +47,7 @@ def create_index_incarcerationlen(database_path=DATABASE_FILENAME):
 
     build_index(database_path, create_index)
 
-def create_labels_indices(database_path=DATABASE_FILENAME):
+def create_labels_indices(database_path=config.DATABASE_FILENAME):
     create_index = (""" 
     CREATE INDEX IF NOT EXISTS
     idx_start
@@ -61,7 +60,7 @@ def create_labels_indices(database_path=DATABASE_FILENAME):
     """)
     build_index(database_path, create_index)
 
-def create_OFNT3CE1_indices(database_path=DATABASE_FILENAME):
+def create_OFNT3CE1_indices(database_path=config.DATABASE_FILENAME):
     create_index = (""" 
     CREATE INDEX IF NOT EXISTS
     idx_offense_start
@@ -81,7 +80,7 @@ def create_OFNT3CE1_indices(database_path=DATABASE_FILENAME):
 
 ## ADD FEATURES ##
 
-def add_all_features(database_path = DATABASE_FILENAME):
+def add_all_features(database_path = config.DATABASE_FILENAME):
     '''
     This function creates a data table with all features
     '''
@@ -154,7 +153,7 @@ def add_all_features(database_path = DATABASE_FILENAME):
 
 ## Age, race, age
 
-def add_gender_race_age(database_path=DATABASE_FILENAME):
+def add_gender_race_age(database_path=config.DATABASE_FILENAME):
     create_labels_indices()
 
     query = (
@@ -187,11 +186,11 @@ def add_gender_race_age(database_path=DATABASE_FILENAME):
     idx_birth
     ON inmate_char(INMATE_BIRTH_DATE)
     """,)
-    build_index(database_path=DATABASE_FILENAME, query = indexq)
+    build_index(database_path=config.DATABASE_FILENAME, query = indexq)
 
 # More age features
 
-def add_ages(database_path=DATABASE_FILENAME):
+def add_ages(database_path=config.DATABASE_FILENAME):
     create_OFNT3CE1_indices()
     query = ("""
     WITH age_first as(
@@ -225,7 +224,7 @@ def add_ages(database_path=DATABASE_FILENAME):
 
 ## Number of sentences
 
-def add_num_sentences(database_path=DATABASE_FILENAME):
+def add_num_sentences(database_path=config.DATABASE_FILENAME):
     query = ("""
     WITH sent as (
         SELECT OFFENDER_NC_DOC_ID_NUMBER as ID, COMMITMENT_PREFIX as PREFIX, count(SENTENCE_COMPONENT_NUMBER) as NUM_SENTENCES
@@ -269,7 +268,7 @@ def add_num_sentences(database_path=DATABASE_FILENAME):
 
 ## Incarceration length
 
-def add_incarceration_lens(database_path=DATABASE_FILENAME):
+def add_incarceration_lens(database_path=config.DATABASE_FILENAME):
     '''
     Features:
         Total/Average incarceration len ever or in the last 5 years
@@ -315,7 +314,7 @@ def add_incarceration_lens(database_path=DATABASE_FILENAME):
     create_ft_table(database_path, table_names, query)
 
 ## County of convictions
-def add_countyconviction(database_path=DATABASE_FILENAME):
+def add_countyconviction(database_path=config.DATABASE_FILENAME):
     '''
     Adding county of conviction
     '''
@@ -330,9 +329,30 @@ def add_countyconviction(database_path=DATABASE_FILENAME):
             ''',)
     create_ft_table(database_path, table_names, query)
 
+
+def get_unique_county(database_path=config.DATABASE_FILENAME):
+    con = sqlite3.connect(database_path)
+    cur = con.cursor()
+    q = '''SELECT DISTINCT
+    COUNTY_OF_CONVICTION_CODE
+    FROM OFNT3CE1
+    '''
+    cur.execute(q)
+    output = cur.fetchall()
+    con.close()
+
+    rv=[]
+    for tup in output:
+        county = tup[0]
+        if county=='COUNTY_OF_CONVICTION_CODE':
+            continue
+        else:
+            rv.append(county)
+    return rv
+
 ## Min/max terms
 
-def add_minmaxterm(database_path=DATABASE_FILENAME):
+def add_minmaxterm(database_path=config.DATABASE_FILENAME):
     '''
     Adding min max term
     '''
