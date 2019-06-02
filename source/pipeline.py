@@ -633,7 +633,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 bias_df = tmp.loc[:, bias_lst]
                 print(bias_df.columns)
                 bias_df.to_csv('bias.csv')
-                model_name = 'BIAS_{}_{}_{}'.format(year, model, parameters)
+                model_name = 'BIAS_{}_{}_{}'.format(year, model, str(parameters).replace(':','-'))
                 plot_bias(model_name, bias_df, bias_metrics = bias_dict['metrics'], 
                     min_group_size = bias_dict['min_group_size'], output_type = 'save')
 
