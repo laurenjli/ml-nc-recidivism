@@ -67,7 +67,7 @@ PLOT_PR = None
 # compute bias: true or false
 BIAS = False
 # save results: true or false
-SAVE_PRED = True
+SAVE_PRED = False
 # population threshold
 POP_THRESHOLD = 20
 
