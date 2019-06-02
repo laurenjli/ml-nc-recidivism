@@ -64,7 +64,7 @@ def preprocess(df, variables=config.VARIABLES):
     return pp.categorical_to_dummy(df, variables['CATEGORICAL_VARS'])
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
-def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=config.RESULTS_FILE, graphs_dir = config.GRAPH_FOLDER,
+def main(gender = config.GENDER, data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=config.RESULTS_FILE, graphs_dir = config.GRAPH_FOLDER,
          variables=config.VARIABLES, models=config.MODELS, eval_metrics=config.EVAL_METRICS,
          eval_metrics_by_level=config.EVAL_METRICS_BY_LEVEL, grid=config.define_clfs_params(config.GRIDSIZE), 
          period=[1997, 2018], plot_pr = config.PLOT_PR, compute_bias = config.BIAS, save_pred = config.SAVE_PRED):
@@ -99,6 +99,14 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
         df_test = pp.get_csv(test_csv)
         df_train = pp.get_csv(train_csv)
 
+        # filter gender
+        if gender == 'MALE_':
+            df_test = df_test[df_test['INMATE_GENDER_CODE'] != 'FEMALE']
+            df_train = df_train[df_train['INMATE_GENDER_CODE'] != 'FEMALE']
+        elif gender == 'FEMALE_':
+            df_test = df_test[df_test['INMATE_GENDER_CODE'] != 'MALE']
+            df_train = df_train[df_train['INMATE_GENDER_CODE'] != 'MALE']
+
         # Pre-process data 
         df_test = preprocess(df_test)
         df_train = preprocess(df_train)
@@ -118,7 +126,9 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             if attr not in df_test.columns:
                 df_test.loc[:,attr] = 0
         print('Training set has {} features'.format(len(attributes_lst)))
-        
+        #print(df_train['INMATE_GENDER_CODE'].unique())
+        #print(df_test['INMATE_GENDER_CODE'].unique())
+
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 
             bias_lst, bias_dict, year, plot_pr, compute_bias, save_pred)

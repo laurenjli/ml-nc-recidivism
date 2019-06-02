@@ -8,9 +8,11 @@ CSVFOLDER="../ncdoc_data/data/preprocessed/"
 DATABASE_FILENAME=CSVFOLDER + "inmates.db"
 DATA_DIR = CSVFOLDER + "traintest"
 
+# gender for model: 'MALE_' 'FEMALE_' or ''
+GENDER = 'MALE_'
 RESULTS_DIR = "results"
 GRAPH_FOLDER = 'graphs'
-RESULTS_FILE = "results.csv"
+RESULTS_FILE = GENDER + "results.csv"
 TRAIN_TEST_COL = 'year'
 SEED = 0
 
@@ -55,15 +57,16 @@ VARIABLES = {
 
 
 ## RUNNING THE MODELS
-GRIDSIZE = 'test'
-MODELS = ['LR']
-#MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
+GRIDSIZE = 'small'
+#MODELS = ['LR']
+MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
 ID = 'ID'
+# g
 # plot pr: save or show or None
-PLOT_PR = None
+PLOT_PR = 'save'
 # compute bias: true or false
 BIAS = False
 # save results: true or false
