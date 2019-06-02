@@ -571,11 +571,11 @@ def plot_bias(model_name, bias_df, bias_metrics = ['ppr','pprev','fnr','fpr', 'f
         pltfile = os.path.join(config.GRAPH_FOLDER,model_name)
         p.savefig(pltfile)
     elif output_type == 'show':
-        plt.show()
+        p.show()
     return
 
 def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, bias_dict, year,
-    plot_pr = None, compute_bias =False):
+    plot_pr = None, compute_bias =False, save_pred=False):
     '''
     This function fits a set of classifiers and a dataframe with performance measures for each
     Input:
@@ -585,7 +585,12 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
         eval_metrics: list of threshold-independent metrics.
         eval_metrics_by_level: tuple containing a list of threshold-dependent metrics as first element and a list of thresholds as second element
         attributes_lst: list containing the names of the features (i.e. X variables) to be used.
+        bias_lst: list of column names for bias 
+        bias_dict: dictionary of metrics for bias computation
+        year: year of data, for saving files
         plot_pr: 'save', 'show', or None
+        compute_bias: boolean whether or not to compute bias for each model
+        save_pred: boolean whether to save final predictions
     Output:
         Dataframe containing performance measures for each classifier
     '''
@@ -624,15 +629,23 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 print('plotting precision recall for {}'.format(model_name))
                 plot_precision_recall_n(y_test, y_pred_prob, model_name, plot_pr)
 
+            # Calculate final label
+            test_set['PREDICTION'] = scores_pctpop(y_pred_prob, config.POP_THRESHOLD)
+            if save_pred:
+                filename = 'PRED_{}_{}_{}.csv'.format(year, model, str(parameters).replace(':','-'))
+                f = os.path.join(config.RESULTS_DIR,filename)
+                final_pred = test_set.loc[:, ['ID', 'PREFIX', 'START_DATE', 'END_DATE', 'LABEL', 'PREDICTION']]
+                final_pred.to_csv(f, index=False)
+            
             # plot bias metrics if desired
             if compute_bias:
+                # reconfigure test set to have the correct column names
                 tmp = test_set.copy()
                 tmp['id'] = tmp['ID']
-                tmp['score'] = scores_pctpop(y_pred_prob, config.POP_THRESHOLD)
+                tmp['score'] = tmp['prediction']
                 tmp['label_value'] = tmp[label]
                 bias_df = tmp.loc[:, bias_lst]
-                print(bias_df.columns)
-                bias_df.to_csv('bias.csv')
+                # plot and save bias
                 model_name = 'BIAS_{}_{}_{}'.format(year, model, str(parameters).replace(':','-'))
                 plot_bias(model_name, bias_df, bias_metrics = bias_dict['metrics'], 
                     min_group_size = bias_dict['min_group_size'], output_type = 'save')

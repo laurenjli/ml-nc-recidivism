@@ -41,7 +41,7 @@ def preprocess(df, variables=config.VARIABLES):
     ## missing imputation
     for attribute in variables['MISSING']['AGE']:
         year_col = 'SENTENCE_YEAR'
-        pen_col = 'INMATE_RACE_CODE'
+        pen_col = 'PRIMARY_OFFENSE_CODE'
         df = pp.impute_with_2cols(df, year_col, pen_col, attribute)
     
     for attribute in variables['MISSING']['MISSING_CAT']:
@@ -71,7 +71,7 @@ def preprocess(df, variables=config.VARIABLES):
 def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=config.RESULTS_FILE, 
          variables=config.VARIABLES, models=config.MODELS, eval_metrics=config.EVAL_METRICS,
          eval_metrics_by_level=config.EVAL_METRICS_BY_LEVEL, grid=config.define_clfs_params(config.GRIDSIZE), 
-         period=[1997, 2018], plot_pr = config.PLOT_PR, compute_bias = config.BIAS):
+         period=[1997, 2018], plot_pr = config.PLOT_PR, compute_bias = config.BIAS, save_pred = config.SAVE_PRED):
     
     first_year = period[0]
     year = period[0]
@@ -118,7 +118,7 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
         
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 
-            bias_lst, bias_dict, year, plot_pr, compute_bias)
+            bias_lst, bias_dict, year, plot_pr, compute_bias, save_pred)
         # add year
         results[config.TRAIN_TEST_COL] = year
         # add baseline for test set

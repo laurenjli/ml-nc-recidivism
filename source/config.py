@@ -65,7 +65,10 @@ ID = 'ID'
 # plot pr: save or show or None
 PLOT_PR = None
 # compute bias: true or false
-BIAS = True
+BIAS = False
+# save results: true or false
+SAVE_PRED = True
+# population threshold
 POP_THRESHOLD = 20
 
 
