@@ -14,7 +14,8 @@ RESULTS_FILE = "results.csv"
 TRAIN_TEST_COL = 'year'
 SEED = 0
 
-# done with race, gender, age, incarceration lens, county, minmaxterm, sentences
+# done with race, gender, age, incarceration lens, county, minmaxterm, 
+# sentences, penalty, offenses, infractions
 
 VARIABLES = {
              'LABEL' : 'LABEL',
@@ -55,9 +56,9 @@ VARIABLES = {
 
 
 ## RUNNING THE MODELS
-GRIDSIZE = 'test'
-MODELS = ['LR']
-#MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
+GRIDSIZE = 'small'
+#MODELS = ['LR']
+MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
@@ -102,10 +103,10 @@ def define_clfs_params(grid_size):
              'min_samples_split': [2,10,50], 'n_jobs': [-1], 'random_state': [SEED]},
     'ET':   {'n_estimators': [10,100,1000], 'criterion' : ['gini', 'entropy'] ,'max_depth': [1,5,10,20],
              'max_features': ['sqrt','log2'],'min_samples_split': [2,10,50], 'n_jobs': [-1], 'random_state': [SEED]},
-    'AB':   {'algorithm': ['SAMME', 'SAMME.R'], 'n_estimators': [10,100,1000], 'random_state': [SEED]},
-    'GB':   {'n_estimators': [10,100,1000], 'learning_rate' : [0.001,0.01],'subsample' : [0.1,0.5],
+    'AB':   {'algorithm': ['SAMME', 'SAMME.R'], 'n_estimators': [10,100], 'random_state': [SEED]},
+    'GB':   {'n_estimators': [10,100], 'learning_rate' : [0.001,0.01],'subsample' : [0.1,0.5],
              'max_depth': [1,5,10,20], 'random_state': [SEED]},
-    'KNN':  {'n_neighbors': [1,10,25,50],'weights': ['uniform','distance'],'algorithm': ['auto','ball_tree','kd_tree']},
+    'KNN':  {'n_neighbors': [10,25],'weights': ['uniform','distance'],'algorithm': ['auto']},
     'DT':   {'criterion': ['gini', 'entropy'], 'max_depth': [1,5,10,20], 'min_samples_split': [2,10,50], 'random_state': [SEED]},
     'SVM':  {'C' :[0.01,0.1,1,10], 'random_state': [SEED]},
     'LR':   {'penalty': ['l1','l2'], 'C': [0.01,0.1,1,10], 'random_state': [SEED]},
