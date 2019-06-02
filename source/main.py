@@ -28,8 +28,6 @@ def preprocess(df, variables=config.VARIABLES):
     # create year of sentence column for future imputation
     df['SENTENCE_YEAR'] = df['START_DATE'].dt.year
 
-    ## outliers
-
     ## create missing indicators
     for fill in variables['INDICATOR']:
         attributes = variables['INDICATOR'][fill]
@@ -55,8 +53,6 @@ def preprocess(df, variables=config.VARIABLES):
     for attribute in variables['MISSING']['IMPUTE_ZERO']:
         df = pp.impute_missing(df, attribute, 0)
 
-    ## discretization
-
     ## dummy
     df = pp.categorical_to_dummy_with_groupconcat(df,variables['SPECIAL_DUMMY'])
 
@@ -80,13 +76,18 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
         os.mkdir(results_dir)
     if not os.path.exists(graphs_dir):
         os.mkdir(graphs_dir)
-    
+
+    # initialize variables
     first_year = period[0]
     year = period[0]
     label = config.VARIABLES['LABEL']
+    bias_lst = variables['BIAS']
+    bias_dict = variables['BIAS_METRICS']
 
     while year <= period[1]:
         print('Running year: {}'.format(year))
+
+        # check if training/test data exists, create it if not
         test_csv = os.path.join(data_dir, "test_{}_test.csv".format(year))
         train_csv = os.path.join(data_dir, "test_{}_train.csv".format(year))
         
@@ -94,16 +95,15 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             print('Creating training and test sets')
             tt.full_traintest() 
 
+        # read in training and test data 
         df_test = pp.get_csv(test_csv)
         df_train = pp.get_csv(train_csv)
 
         # Pre-process data 
-
         df_test = preprocess(df_test)
         df_train = preprocess(df_train)
 
         #scaling continuous variable
-
         scaler = MinMaxScaler()
         for attribute in variables['CONTINUOUS_VARS_MINMAX']:
             data_for_fitting = df_train[attribute].values.reshape(-1,1)
@@ -118,11 +118,6 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
             if attr not in df_test.columns:
                 df_test.loc[:,attr] = 0
         print('Training set has {} features'.format(len(attributes_lst)))
-        #print(attributes_lst)
-
-        # bias metrics
-        bias_lst = variables['BIAS']
-        bias_dict = variables['BIAS_METRICS']
         
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 

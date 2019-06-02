@@ -631,6 +631,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
 
             # Calculate final label
             test_set['PREDICTION'] = scores_pctpop(y_pred_prob, config.POP_THRESHOLD)
+            # save final predictions to file
             if save_pred:
                 filename = 'PRED_{}_{}_{}.csv'.format(year, model, str(parameters).replace(':','-'))
                 f = os.path.join(config.RESULTS_DIR,filename)
@@ -642,7 +643,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 # reconfigure test set to have the correct column names
                 tmp = test_set.copy()
                 tmp['id'] = tmp['ID']
-                tmp['score'] = tmp['prediction']
+                tmp['score'] = tmp['PREDICTION']
                 tmp['label_value'] = tmp[label]
                 bias_df = tmp.loc[:, bias_lst]
                 # plot and save bias
@@ -650,6 +651,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 plot_bias(model_name, bias_df, bias_metrics = bias_dict['metrics'], 
                     min_group_size = bias_dict['min_group_size'], output_type = 'save')
 
+            # evaluate metrics
             if eval_metrics:
                 eval_result += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]
             
