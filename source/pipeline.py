@@ -575,7 +575,7 @@ def plot_bias(model_name, bias_df, bias_metrics = ['ppr','pprev','fnr','fpr', 'f
     return
 
 def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, bias_dict, year,
-    plot_pr = None, compute_bias =False, save_pred=False):
+    results_dir, results_file, plot_pr = None, compute_bias =False, save_pred=False):
     '''
     This function fits a set of classifiers and a dataframe with performance measures for each
     Input:
@@ -595,14 +595,20 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
         Dataframe containing performance measures for each classifier
     '''
     #initialize results
-    results_columns = (['model','classifiers', 'parameters', 'train_set_size', 'validation_set_size','features'] + eval_metrics + 
+    results_columns = (['year','model','classifiers', 'parameters', 'train_set_size', 'validation_set_size','features', 'baseline'] + eval_metrics + 
                       [metric + '_' + str(level) for level in eval_metrics_by_level[1] for metric in eval_metrics_by_level[0]])
     results =  pd.DataFrame(columns=results_columns)
     # subset training and test sets 
-    y_train = train_set[label]
     X_train = train_set.loc[:, attributes_lst]
-    y_test = test_set[label]
+    y_train = train_set[label]
     X_test = test_set.loc[:, attributes_lst]
+    y_test = test_set[label]
+    n_target = sum(test_set[label])
+    n_observations = len(test_set[label])
+    baseline = n_target/n_observations
+    print(sum(test_set[label]))
+    print(len(test_set[label]))
+           
     # iterate through models
     for model in models:
         #create parameters grids
@@ -615,8 +621,11 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             clfr = classifier.set_params(**parameters)
             # fit model
             clfr.fit(X_train, y_train)
+            
+            # add baseline for test set
 
-            eval_result = [model, classifier, parameters, len(X_train), len(X_test), attributes_lst]
+            eval_result = [year, model, classifier, parameters, len(X_train), len(X_test), attributes_lst, baseline]
+
             # calculate scores
             if isinstance(clfr, LinearSVC):
                 y_pred_prob = clfr.decision_function(X_test)
@@ -659,6 +668,13 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 for level in eval_metrics_by_level[1]:
                    y_test, y_pred = pred_at_level(y_test, y_pred_prob, level)
                    eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]]
-             
+            
             results.loc[len(results)] = eval_result
-    return results
+
+            if model == models[0]:
+                results.to_csv(os.path.join(results_dir, results_file), index=False)
+            else:
+                with open(os.path.join(results_dir, results_file), 'a') as f:
+                    results.to_csv(f, header=False, index=False) 
+   
+    #return results

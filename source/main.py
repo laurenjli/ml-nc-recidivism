@@ -135,18 +135,18 @@ def main(gender = config.GENDER, data_dir=config.DATA_DIR, results_dir=config.RE
 
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 
-            bias_lst, bias_dict, year, plot_pr, compute_bias, save_pred)
-        # add year
-        results[config.TRAIN_TEST_COL] = year
-        # add baseline for test set
-        results['baseline'] = sum(df_test[label])/len(df_test[label])
+            bias_lst, bias_dict, year, results_dir, results_file, plot_pr, compute_bias, save_pred)
+        # # add year
+        # results[config.TRAIN_TEST_COL] = year
+        # # add baseline for test set
+        # results['baseline'] = sum(df_test[label])/len(df_test[label])
 
-        # save results
-        if year == first_year:
-            results.to_csv(os.path.join(results_dir, results_file), index=False)
-        else:
-            with open(os.path.join(results_dir, results_file), 'a') as f:
-                results.to_csv(f, header=False, index=False) 
+        # # save results
+        # if year == first_year:
+        #     results.to_csv(os.path.join(results_dir, results_file), index=False)
+        # else:
+        #     with open(os.path.join(results_dir, results_file), 'a') as f:
+        #         results.to_csv(f, header=False, index=False) 
 
         year += 1
 
