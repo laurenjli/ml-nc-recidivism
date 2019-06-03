@@ -101,17 +101,21 @@ def main(gender = config.GENDER, data_dir=config.DATA_DIR, results_dir=config.RE
 
         # filter gender
         if gender == 'MALE_':
+            print('Gender filter: male (and missing)')
             df_test = df_test[df_test['INMATE_GENDER_CODE'] != 'FEMALE']
             df_train = df_train[df_train['INMATE_GENDER_CODE'] != 'FEMALE']
         elif gender == 'FEMALE_':
+            print('Gender filter: female (and missing)')
             df_test = df_test[df_test['INMATE_GENDER_CODE'] != 'MALE']
             df_train = df_train[df_train['INMATE_GENDER_CODE'] != 'MALE']
 
         # Pre-process data 
+        print('Pre-processing data')
         df_test = preprocess(df_test)
         df_train = preprocess(df_train)
 
         #scaling continuous variable
+        print('Scaling data')
         scaler = MinMaxScaler()
         for attribute in variables['CONTINUOUS_VARS_MINMAX']:
             data_for_fitting = df_train[attribute].values.reshape(-1,1)
