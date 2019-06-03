@@ -625,7 +625,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
 
             # plot precision and recall if desired
             if plot_pr:
-                model_name = 'PRC_{}_{}_{}'.format(year, model, str(parameters).replace(':','-'))
+                model_name = 'PRC_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
                 print('plotting precision recall for {}'.format(model_name))
                 plot_precision_recall_n(y_test, y_pred_prob, model_name, plot_pr)
 
@@ -647,7 +647,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 tmp['label_value'] = tmp[label]
                 bias_df = tmp.loc[:, bias_lst]
                 # plot and save bias
-                model_name = 'BIAS_{}_{}_{}'.format(year, model, str(parameters).replace(':','-'))
+                model_name = 'BIAS_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
                 plot_bias(model_name, bias_df, bias_metrics = bias_dict['metrics'], 
                     min_group_size = bias_dict['min_group_size'], output_type = 'save')
 
