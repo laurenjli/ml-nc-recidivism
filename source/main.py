@@ -137,4 +137,4 @@ def main(data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=
         year += 1
 
 if __name__ == "__main__":
-  main()
+  main(period=config.YEARS)

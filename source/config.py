@@ -59,16 +59,17 @@ VARIABLES = {
 GRIDSIZE = 'small'
 #MODELS = ['LR']
 MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
+YEARS = [1997,2018]
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
 ID = 'ID'
 # plot pr: save or show or None
-PLOT_PR = None
+PLOT_PR = 'save'
 # compute bias: true or false
-BIAS = False
+BIAS = True
 # save results: true or false
-SAVE_PRED = False
+SAVE_PRED = True
 # population threshold
 POP_THRESHOLD = 20
 

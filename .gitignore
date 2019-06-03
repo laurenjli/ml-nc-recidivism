@@ -1,6 +1,9 @@
 ncdoc_data/data/*
 *db
+*png
 source/results/*csv
+source/results/*png
+source/graphs/*png
 __pycache__/*
 source/__pycache__/*
 *csv
