@@ -581,9 +581,10 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     Input:
         train_set, test_set: dataframe for training and testing the models
         label: name of the Y variable
-        n_samples: number of times that the data will be partitioned in training and testing sets.
+        models: classifier models to fit
         eval_metrics: list of threshold-independent metrics.
         eval_metrics_by_level: tuple containing a list of threshold-dependent metrics as first element and a list of thresholds as second element
+        custom_grid: grid of parameters
         attributes_lst: list containing the names of the features (i.e. X variables) to be used.
         bias_lst: list of column names for bias 
         bias_dict: dictionary of metrics for bias computation
@@ -672,9 +673,9 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             results.loc[len(results)] = eval_result
 
             if model == models[0]:
-                results.to_csv(os.path.join(results_dir, results_file), index=False)
+                results.to_csv(os.path.join(results_dir, "{}_{}".format(results_file, year)), index=False)
             else:
-                with open(os.path.join(results_dir, results_file), 'a') as f:
+                with open(os.path.join(results_dir, "{}_{}".format(results_file, year)), 'a') as f:
                     results.to_csv(f, header=False, index=False) 
    
     #return results
