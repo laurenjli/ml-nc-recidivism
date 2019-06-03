@@ -11,7 +11,7 @@ DATA_DIR = CSVFOLDER + "traintest"
 # gender for model: 'MALE_' 'FEMALE_' or ''
 GENDER = 'MALE_'
 RESULTS_DIR = "results"
-GRAPH_FOLDER = 'graphs'
+GRAPH_FOLDER = GENDER + 'graphs'
 RESULTS_FILE = GENDER + "results.csv"
 TRAIN_TEST_COL = 'year'
 SEED = 0
