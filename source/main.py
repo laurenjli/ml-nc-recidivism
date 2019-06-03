@@ -67,7 +67,7 @@ def preprocess(df, variables=config.VARIABLES):
 def main(gender = config.GENDER, data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=config.RESULTS_FILE, graphs_dir = config.GRAPH_FOLDER,
          variables=config.VARIABLES, models=config.MODELS, eval_metrics=config.EVAL_METRICS,
          eval_metrics_by_level=config.EVAL_METRICS_BY_LEVEL, grid=config.define_clfs_params(config.GRIDSIZE), 
-         period=[1997, 2018], plot_pr = config.PLOT_PR, compute_bias = config.BIAS, save_pred = config.SAVE_PRED):
+         period=config.YEARS, plot_pr = config.PLOT_PR, compute_bias = config.BIAS, save_pred = config.SAVE_PRED):
 
     # check if necessary data and results directories exist
     if not os.path.exists(data_dir):
@@ -147,4 +147,4 @@ def main(gender = config.GENDER, data_dir=config.DATA_DIR, results_dir=config.RE
         year += 1
 
 if __name__ == "__main__":
-  main(period=config.YEARS)
+  main()
