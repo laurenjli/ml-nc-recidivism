@@ -1,7 +1,7 @@
 ncdoc_data/data/*
 *db
 *png
-source/results/*csv
+source/results/results.csv
 source/results/*png
 source/graphs/*png
 __pycache__/*
