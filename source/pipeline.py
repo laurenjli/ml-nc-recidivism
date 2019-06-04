@@ -411,7 +411,7 @@ def scores_pctpop(pred_scores, pct_pop):
     #set observations by index (the ones ranked high enough) to 1
     pred_df.iloc[idx] = 1
     
-    return pred_df
+    return list(pred_df)
 
 def pred_at_level(y_true, y_scores, level):
     '''
