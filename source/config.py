@@ -113,7 +113,7 @@ def define_clfs_params(grid_size):
     'DT':   {'criterion': ['gini', 'entropy'], 'max_depth': [1,5,10,20], 'min_samples_split': [2,10,50], 'random_state': [SEED]},
     'SVM':  {'C' :[0.01,0.1,1,10], 'random_state': [SEED]},
     'LR':   {'penalty': ['l1','l2'], 'C': [0.01,0.1,1,10], 'random_state': [SEED]},
-    'BAG':  {'n_estimators': [10,100,1000], 'n_jobs': [None], 'random_state': [SEED]},
+    'BAG':  {'n_estimators': [10,100], 'n_jobs': [None], 'random_state': [SEED]},
     'NB':   {'alpha': [0.01,0.1,1,10], 'fit_prior': [True, False]}
             }
        
