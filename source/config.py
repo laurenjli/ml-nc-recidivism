@@ -59,14 +59,14 @@ VARIABLES = {
 
 ## RUNNING THE MODELS
 GRIDSIZE = 'small'
-#MODELS = ['LR']
-MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
+#MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
+MODELS = ['RF', 'ET', 'DT', 'KNN', 'LR', 'SVM', 'NB']
 YEARS = [2016,2018]
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
 ID = 'ID'
-# g
+
 # plot pr: save or show or None
 PLOT_PR = 'save'
 # compute bias: true or false
@@ -108,8 +108,8 @@ def define_clfs_params(grid_size):
     'ET':   {'n_estimators': [10,100,1000], 'criterion' : ['gini', 'entropy'] ,'max_depth': [1,5,10,20],
              'max_features': ['sqrt','log2'],'min_samples_split': [2,10,50], 'n_jobs': [-1], 'random_state': [SEED]},
     'AB':   {'algorithm': ['SAMME', 'SAMME.R'], 'n_estimators': [10,100], 'random_state': [SEED]},
-    'GB':   {'n_estimators': [10,100], 'learning_rate' : [0.001,0.01],'subsample' : [0.1,0.5],
-             'max_depth': [1,5,10,20], 'random_state': [SEED]},
+    'GB':   {'n_estimators': [10,100], 'learning_rate' : [0.1],'subsample' : [0.5],
+             'max_depth': [5,10], 'random_state': [SEED]},
     'KNN':  {'n_neighbors': [10,25],'weights': ['uniform','distance'],'algorithm': ['auto']},
     'DT':   {'criterion': ['gini', 'entropy'], 'max_depth': [1,5,10,20], 'min_samples_split': [2,10,50], 'random_state': [SEED]},
     'SVM':  {'C' :[0.01,0.1,1,10], 'random_state': [SEED]},
