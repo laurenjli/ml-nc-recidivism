@@ -12,7 +12,7 @@ DATA_DIR = CSVFOLDER + "traintest"
 GENDER = 'MALE_'
 RESULTS_DIR = "results"
 GRAPH_FOLDER = GENDER + 'graphs'
-RESULTS_FILE = GENDER + "results.csv"
+RESULTS_FILE = GENDER + "results"
 TRAIN_TEST_COL = 'year'
 SEED = 0
 

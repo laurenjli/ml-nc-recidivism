@@ -673,9 +673,9 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             results.loc[len(results)] = eval_result
 
             if model == models[0]:
-                results.to_csv(os.path.join(results_dir, "{}_{}".format(results_file, year)), index=False)
+                results.to_csv(os.path.join(results_dir, "{}_{}.csv".format(results_file, year)), index=False)
             else:
-                with open(os.path.join(results_dir, "{}_{}".format(results_file, year)), 'a') as f:
+                with open(os.path.join(results_dir, "{}_{}.csv".format(results_file, year)), 'a') as f:
                     results.to_csv(f, header=False, index=False) 
    
     #return results
