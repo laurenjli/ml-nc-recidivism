@@ -298,8 +298,26 @@ def create_indicator(df, col, indicator_name='missing'):
 
 ### Evaluation Metrics
 
+def plot_scores_hist(df,col_score, model_name, output_type = 'save'):
+    '''
+    This function plots histogram of scores.
 
-def plot_precision_recall_n(y_true, y_prob, model_name, output_type):
+    df: dataframe
+    col_score: column with scores
+    model_name: name of model
+    output_type: 'save', 'show', ''
+    '''
+    plt.clf()
+    df[col_score].hist()
+    plt.title(model_name)
+    if output_type == 'save':
+        f = os.path.join(config.GRAPH_FOLDER, model_name)
+        plt.savefig(f)
+    elif output_type == 'show':
+        plt.show()
+
+
+def plot_precision_recall_n(y_true, y_prob, model_name, subtitle, output_type):
     '''
     Plot precision and recall for each threshold
 
@@ -307,8 +325,10 @@ def plot_precision_recall_n(y_true, y_prob, model_name, output_type):
         y_true: real labels for testing set
         y_prob: array of predicted scores from model
         model_name: (str) title for plot
+        subtitle: subtitle
         output_type: (str) save or show
     '''
+    plt.clf()
     y_score = y_prob
     precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_true, y_score)
     precision_curve = precision_curve[:-1]
@@ -328,13 +348,15 @@ def plot_precision_recall_n(y_true, y_prob, model_name, output_type):
     ax1.set_xlabel('percent of population')
     ax1.set_ylabel('precision', color='b')
     ax2 = ax1.twinx()
-    ax2.plot(pct_above_per_thresh, recall_curve, 'r')
-    ax2.set_ylabel('recall', color='r')
+    ax2.plot(pct_above_per_thresh, recall_curve, 'orange')
+    ax2.set_ylabel('recall', color='orange')
     ax1.set_ylim([0,1])
     ax1.set_ylim([0,1])
     ax2.set_xlim([0,1])
+    ax1.axvline(x=0.2, ymin=0, ymax=1, color = 'gray')
 
-    plt.title(model_name)
+    plt.suptitle(model_name)
+    plt.title(subtitle)
 
     if (output_type == 'save'):
         pltfile = os.path.join(config.GRAPH_FOLDER,model_name)
@@ -403,7 +425,8 @@ def scores_pctpop(pred_scores, pct_pop):
     #identify number of positives to have given target percent of population
     num_pos = int(round(len(pred_scores)*(pct_pop/100),0))
     #turn predictions into series
-    pred_df = pd.Series(pred_scores)
+    tmp = pred_scores.copy()
+    pred_df = pd.Series(tmp)
     idx = pred_df.sort_values(ascending=False)[0:num_pos].index 
     
     #set all observations to 0
@@ -596,7 +619,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
         Dataframe containing performance measures for each classifier
     '''
     #initialize results
-    results_columns = (['year','model','classifiers', 'parameters', 'train_set_size', 'validation_set_size', 'baseline'] + eval_metrics + 
+    results_columns = (['year','model','classifiers', 'parameters', 'train_set_size', 'num_features', 'validation_set_size', 'baseline'] + eval_metrics + 
                       [metric + '_' + str(level) for level in eval_metrics_by_level[1] for metric in eval_metrics_by_level[0]])
     results =  pd.DataFrame(columns=results_columns)
     # subset training and test sets 
@@ -607,10 +630,10 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     n_target = sum(test_set[label])
     n_observations = len(test_set[label])
     baseline = n_target/n_observations
-    print(sum(test_set[label]))
-    print(len(test_set[label]))
+    #print(sum(test_set[label]))
+    #print(len(test_set[label]))
         
-    features_txt = os.path.join(results_dir, "features_{}.txt".format(year)
+    features_txt = os.path.join(results_dir, "features_{}.txt".format(year))
     if not os.path.exists(features_txt):
         with open(features_txt, "w") as f:
             print(attributes_lst, file=f)
@@ -629,7 +652,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             clfr.fit(X_train, y_train)
             
             # add baseline for test set
-            eval_result = [year, model, classifier, parameters, len(X_train), len(X_test), baseline]
+            eval_result = [year, model, classifier, parameters, len(X_train), len(attributes_lst), len(X_test), baseline]
 
             # calculate scores
             if isinstance(clfr, LinearSVC):
@@ -637,21 +660,30 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             else:    
                 y_pred_prob = clfr.predict_proba(X_test)[:,1]
 
-            # plot precision and recall if desired
-            if plot_pr:
-                model_name = 'PRC_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
-                print('plotting precision recall for {}'.format(model_name))
-                plot_precision_recall_n(y_test, y_pred_prob, model_name, plot_pr)
+            # add score to data
+            test_set['SCORE'] = y_pred_prob
+            # plot and save score distributions
+            model_name = 'HIST_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
+            plot_scores_hist(test_set, 'SCORE', model_name, output_type = 'save')
 
             # Calculate final label
             test_set['PREDICTION'] = scores_pctpop(y_pred_prob, config.POP_THRESHOLD)
+            #print(y_pred_prob)
             # save final predictions to file
             if save_pred:
                 filename = 'PRED_{}_{}_{}.csv'.format(year, model, str(parameters).replace(':','-'))
                 f = os.path.join(config.RESULTS_DIR,filename)
-                final_pred = test_set.loc[:, ['ID', 'PREFIX', 'START_DATE', 'END_DATE', 'LABEL', 'PREDICTION']]
+                final_pred = test_set.loc[:, ['ID', 'PREFIX', 'START_DATE', 'END_DATE', 'LABEL', 'SCORE','PREDICTION']]
                 final_pred.to_csv(f, index=False)
             
+            # plot precision and recall if desired
+            if plot_pr:
+                model_name = 'PRC_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
+                print('plotting precision recall for {}'.format(model_name))
+                rec = recall_at_threshold(y_test, test_set['PREDICTION'])
+                subtitle = 'Recall at {} is {}'.format(config.POP_THRESHOLD, rec)
+                plot_precision_recall_n(y_test, y_pred_prob, model_name, subtitle, plot_pr)
+
             # plot bias metrics if desired
             if compute_bias:
                 # reconfigure test set to have the correct column names
@@ -671,7 +703,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             
             if eval_metrics_by_level[0]:
                 for level in eval_metrics_by_level[1]:
-                   y_test, y_pred = pred_at_level(y_test, y_pred_prob, level)
+                   y_pred = scores_pctpop(y_pred_prob, level)
                    eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]]
             
             results.loc[len(results)] = eval_result
@@ -681,5 +713,4 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             else:
                 with open(os.path.join(results_dir, "{}_{}.csv".format(results_file, year)), 'a') as f:
                     results.to_csv(f, header=False, index=False) 
-   
     #return results
