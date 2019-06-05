@@ -28,6 +28,7 @@ from sklearn.metrics import accuracy_score as accuracy, confusion_matrix, f1_sco
 from sklearn.metrics import roc_curve, precision_recall_curve
 
 import os
+import csv
 import config
 from aequitas.group import Group
 from aequitas.plotting import Plot
@@ -621,7 +622,13 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     #initialize results
     results_columns = (['year','model','classifiers', 'parameters', 'train_set_size', 'num_features', 'validation_set_size', 'baseline'] + eval_metrics + 
                       [metric + '_' + str(level) for level in eval_metrics_by_level[1] for metric in eval_metrics_by_level[0]])
-    results =  pd.DataFrame(columns=results_columns)
+    
+    # Write header for the csv
+    outfile = os.path.join(results_dir, "{}_{}.csv".format(results_file, year))
+    with open(outfile, "w") as f:
+        csvwriter = csv.writer(f, delimiter=',')
+        csvwriter.writerow(results_columns)
+
     # subset training and test sets 
     X_train = train_set.loc[:, attributes_lst]
     y_train = train_set[label]
@@ -706,11 +713,16 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                    y_pred = scores_pctpop(y_pred_prob, level)
                    eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]]
             
-            results.loc[len(results)] = eval_result
+            # writing out results in csv file
+            with open(outfile, "a") as f:
+                csvwriter = csv.writer(f)
+                csvwriter.writerow(eval_result)
+            
+            # results.loc[len(results)] = eval_result
 
-            if model == models[0]:
-                results.to_csv(os.path.join(results_dir, "{}_{}.csv".format(results_file, year)), index=False)
-            else:
-                with open(os.path.join(results_dir, "{}_{}.csv".format(results_file, year)), 'a') as f:
-                    results.to_csv(f, header=False, index=False) 
+            # if model == models[0]:
+            #     results.to_csv(outfile, index=False)
+            # else:
+            #     with open(os.path.join(results_dir, "{}_{}.csv".format(results_file, year)), 'a') as f:
+            #         results.to_csv(f, header=False, index=False) 
     #return results
