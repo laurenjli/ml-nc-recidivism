@@ -714,9 +714,9 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                    eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]]
             
             # writing out results in csv file
-                with open(outfile, "a") as f:
-                    csvwriter = csv.writer(f)
-                    csvwriter.writerow(eval_result)
+            with open(outfile, "a") as f:
+                csvwriter = csv.writer(f)
+                csvwriter.writerow(eval_result)
             
             # results.loc[len(results)] = eval_result
 
