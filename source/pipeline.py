@@ -513,7 +513,7 @@ def get_stability_score(trainsets, metric, cols):
 
 
 def get_metric_graph(df, metric, model_and_para, baseline, train_test_col, 
-                     train_test_val, title, filename):
+                     train_test_val, title, filename, save=False):
     '''
     Inputs:
         df: pandas dataframe of results
@@ -562,7 +562,7 @@ def get_metric_graph(df, metric, model_and_para, baseline, train_test_col,
                              train_test_col, train_test_val)
     new_df = pd.DataFrame(full_dict)
     
-    plot_graph(new_df, metric, title, filename, save=True)
+    plot_graph(new_df, metric, title, filename, save)
 
 
 ### Master Classifier
