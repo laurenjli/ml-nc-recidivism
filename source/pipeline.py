@@ -509,7 +509,7 @@ def get_stability_score(trainsets, metric, cols):
         sort['rank'] = range(len(sort))
         result = result.append(sort)
     result = result[cols + ['rank']]
-    return result.groupby('parameters').mean().sort_values('rank')
+    return result.groupby(['classifiers','parameters']).mean().sort_values('rank')
 
 
 def get_metric_graph(df, metric, model_and_para, baseline, train_test_col, 
