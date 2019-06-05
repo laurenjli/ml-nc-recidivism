@@ -537,19 +537,17 @@ def get_metric_graph(df, metric, model_and_para, baseline, train_test_col,
         dic[model + ' ' + para] = col
         return dic
     
-    def plot_graph(df, metric, title, filename, save=False):
+    def plot_graph(df, metric, train_test_val, title, filename, save=False):
         '''
         Plot metric over different traintest sets
         '''
         df.plot.line()
         plt.title(title)
         plt.ylabel(metric)
-        plt.xticks([0,1,2], ['jul12','jan12','jul13'])
-        if metric.startswith('precision'):
-            plt.yticks([0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
-        else:
-            plt.yticks([0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
-        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), shadow=True, ncol=1)
+        tick = list(range(len(train_test_val)))
+        plt.xticks(tick, train_test_val)
+        plt.yticks([0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0])
+        plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.05), ncol=1)
         if save:
             plt.savefig(filename)
         plt.show()
@@ -558,11 +556,12 @@ def get_metric_graph(df, metric, model_and_para, baseline, train_test_col,
 
     for m in model_and_para:
         model, para = m
-        full_dict = get_data(df, full_dict, model, para, metric, 
-                             train_test_col, train_test_val)
+        dic = get_data(df, full_dict, model, para, metric, train_test_col, train_test_val)
+        full_dict.update(dic)
+    full_dict['baseline'] = baseline
     new_df = pd.DataFrame(full_dict)
     
-    plot_graph(new_df, metric, title, filename, save)
+    plot_graph(new_df, metric, train_test_val, title, filename, save)
 
 
 ### Master Classifier
