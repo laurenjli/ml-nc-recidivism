@@ -323,10 +323,9 @@ def plot_scores_hist(df,col_score, model_name, output_type = 'save'):
         plt.show()
 
 
-def plot_precision_recall_n(y_true, y_prob, model_name, subtitle, output_type):
+def plot_precision_recall_n(precision, recall, pct_pop, model_name, subtitle, output_type):
     '''
     Plot precision and recall for each threshold
-
     Inputs:
         y_true: real labels for testing set
         y_prob: array of predicted scores from model
@@ -334,32 +333,34 @@ def plot_precision_recall_n(y_true, y_prob, model_name, subtitle, output_type):
         subtitle: subtitle
         output_type: (str) save or show
     '''
-    plt.clf()
-    y_score = y_prob
-    precision_curve, recall_curve, pr_thresholds = precision_recall_curve(y_true, y_score)
-    precision_curve = precision_curve[:-1]
-    recall_curve = recall_curve[:-1]
-
-    pct_above_per_thresh = []
-    number_scored = len(y_score)
-    for value in pr_thresholds:
-        num_above_thresh = len(y_score[y_score>=value])
-        pct_above_thresh = num_above_thresh / float(number_scored)
-        pct_above_per_thresh.append(pct_above_thresh)
-
-    pct_above_per_thresh = np.array(pct_above_per_thresh)
-    
     fig, ax1 = plt.subplots()
-    ax1.plot(pct_above_per_thresh, precision_curve, 'b')
+    #plot precision
+    color = 'blue'
     ax1.set_xlabel('percent of population')
-    ax1.set_ylabel('precision', color='b')
-    ax2 = ax1.twinx()
-    ax2.plot(pct_above_per_thresh, recall_curve, 'orange')
-    ax2.set_ylabel('recall', color='orange')
-    ax1.set_ylim([0,1])
-    ax1.set_ylim([0,1])
-    ax2.set_xlim([0,1])
-    ax1.axvline(x=0.2, ymin=0, ymax=1, color = 'gray')
+    ax1.set_ylabel('precision', color=color)
+    ax1.plot(pct_pop, precision, color=color)
+    ax1.tick_params(axis='y', labelcolor=color)
+    plt.yticks(np.arange(0, 1.2, step=0.2))
+    ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    #plot recall
+    color = 'orange'
+    ax2.set_ylabel('recall', color=color)  # we already handled the x-label with ax1
+    ax2.plot(pct_pop, recall, color=color)
+    ax2.tick_params(axis='y', labelcolor=color)
+    plt.yticks(np.arange(0, 1.2, step=0.2))
+    fig.tight_layout()  # otherwise the right y-label is slightly clipped
+ 
+    # fig, ax1 = plt.subplots()
+    # ax1.set_xlabel('percent of population')
+    # ax1.set_ylabel('precision', color='b')
+    # ax1.plot(pct_pop, precision, 'b')
+    # ax2 = ax1.twinx()
+    # ax2.set_ylabel('recall', color='orange')
+    # ax2.plot(pct_pop, recall, 'orange')
+    # ax1.set_ylim([0,1])
+    # ax1.set_ylim([0,1])
+    # ax2.set_xlim([0,1])
+    ax1.axvline(x=0.1, ymin=0, ymax=1, color = 'gray')
 
     plt.suptitle(model_name)
     plt.title(subtitle)
@@ -371,6 +372,7 @@ def plot_precision_recall_n(y_true, y_prob, model_name, subtitle, output_type):
         plt.show()
     else:
         pass
+
 
     
 def f1_at_threshold(y_true, y_predicted):
@@ -687,7 +689,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             if isinstance(clfr, DecisionTreeClassifier):
                 filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
                 visualize_tree(clfr, attributes_lst, ['No','Yes'], filename)
-                print('tree saved')
+                print('decision tree saved')
 
 
             # add baseline for test set
@@ -707,7 +709,6 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
 
             # Calculate final label
             test_set['PREDICTION'] = scores_pctpop(y_pred_prob, config.POP_THRESHOLD)
-            #print(y_pred_prob)
             # save final predictions to file
             if save_pred:
                 filename = 'PRED_{}_{}_{}.csv'.format(year, model, str(parameters).replace(':','-'))
@@ -715,14 +716,6 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 final_pred = test_set.loc[:, ['ID', 'PREFIX', 'START_DATE', 'END_DATE', 'LABEL', 'SCORE','PREDICTION']]
                 final_pred.to_csv(f, index=False)
             
-            # plot precision and recall if desired
-            if plot_pr:
-                model_name = 'PRC_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
-                print('plotting precision recall for {}'.format(model_name))
-                rec = recall_at_threshold(y_test, test_set['PREDICTION'])
-                subtitle = 'Recall at {} is {}'.format(config.POP_THRESHOLD, rec)
-                plot_precision_recall_n(y_test, y_pred_prob, model_name, subtitle, plot_pr)
-
             # plot bias metrics if desired
             if compute_bias:
                 # reconfigure test set to have the correct column names
@@ -741,20 +734,34 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 eval_result += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]
             
             if eval_metrics_by_level[0]:
+                precision = []
+                recall = []
                 for level in eval_metrics_by_level[1]:
-                   y_pred = scores_pctpop(y_pred_prob, level)
-                   eval_result += [metrics[metric](y_test, y_pred) for metric in eval_metrics_by_level[0]]
+                    y_pred = scores_pctpop(y_pred_prob, level)
+                    for metric in eval_metrics_by_level[0]:
+                        score = metrics[metric](y_test, y_pred)
+                        if metric == 'precision':
+                            precision.append(score)
+                        elif metric == 'recall':
+                            recall.append(score)
+                        eval_result += [score]
             
             # writing out results in csv file
             with open(outfile, "a") as f:
                 csvwriter = csv.writer(f)
                 csvwriter.writerow(eval_result)
             
-            # results.loc[len(results)] = eval_result
+            # plot precision and recall if desired
+            if plot_pr:
+                model_name = 'PRC_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
+                print('plotting precision recall for {}'.format(model_name))
+                rec = recall_at_threshold(y_test, test_set['PREDICTION'])
+                subtitle = 'Recall at {} is {}'.format(config.POP_THRESHOLD, rec)
+                y_pred = scores_pctpop(y_pred_prob,100)
+                thresholds = eval_metrics_by_level[1] + [100]
+                precision.append(precision_at_threshold(y_test, y_pred))
+                recall.append(recall_at_threshold(y_test, y_pred))
+                plot_precision_recall_n(precision, recall, thresholds, model_name, subtitle, plot_pr)
 
-            # if model == models[0]:
-            #     results.to_csv(outfile, index=False)
-            # else:
-            #     with open(os.path.join(results_dir, "{}_{}.csv".format(results_file, year)), 'a') as f:
-            #         results.to_csv(f, header=False, index=False) 
-    #return results
+            
+
