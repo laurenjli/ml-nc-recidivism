@@ -68,7 +68,7 @@ BIAS = False
 # save results: true or false
 SAVE_PRED = True
 # population threshold
-POP_THRESHOLD = 20
+POP_THRESHOLD = 10
 
 
 def define_clfs_params(grid_size):
