@@ -32,8 +32,6 @@ def preprocess(df, variables=config.VARIABLES):
     for fill in variables['INDICATOR']:
         attributes = variables['INDICATOR'][fill]
         for attr in attributes:
-            if attr == 'INCARCERATION_LEN_DAYS':
-                df[attr] = df[attr].where(df[attr]>=0)   # replace neg values with nulls
             df = pp.create_indicator(df, attr, fill)
     
     ## missing imputation
@@ -45,10 +43,10 @@ def preprocess(df, variables=config.VARIABLES):
     for attribute in variables['MISSING']['MISSING_CAT']:
         df = pp.impute_missing(df, attribute)
 
-    for attribute in variables['MISSING']['INCARCERATION']:
-        offense_col = 'PRIMARY_OFFENSE_CODE'
-        pen_col = 'SENTENCING_PENALTY_CLASS_CODE'
-        df = pp.impute_with_2cols(df, offense_col, pen_col, attribute)
+    # for attribute in variables['MISSING']['INCARCERATION']:
+    #     offense_col = 'PRIMARY_OFFENSE_CODE'
+    #     pen_col = 'SENTENCING_PENALTY_CLASS_CODE'
+    #     df = pp.impute_with_2cols(df, offense_col, pen_col, attribute)
 
     for attribute in variables['MISSING']['IMPUTE_ZERO']:
         df = pp.impute_missing(df, attribute, 0)
