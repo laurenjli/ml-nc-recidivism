@@ -28,6 +28,7 @@ GradientBoostingClassifier, AdaBoostClassifier, BaggingClassifier)
 from sklearn.metrics import accuracy_score as accuracy, confusion_matrix, f1_score, auc, roc_auc_score, precision_score
 from sklearn.metrics import roc_curve, precision_recall_curve
 
+from sklearn.externals.six import StringIO
 import os
 import csv
 import graphviz
@@ -686,6 +687,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             if isinstance(clfr, DecisionTreeClassifier):
                 filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
                 visualize_tree(clfr, attributes_lst, ['No','Yes'], filename)
+                print('tree saved')
 
 
             # add baseline for test set
