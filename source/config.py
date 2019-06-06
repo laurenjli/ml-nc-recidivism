@@ -24,17 +24,11 @@ VARIABLES = {
 #             'TO_DISCRETIZE' : [{'NUM_SENTENCES': (3, ['low','medium','high'])}],
              'DATES' : ['START_DATE', 'END_DATE'],
              'MISSING' : {'MISSING_CAT': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE'],
-                          'AGE': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
-                                  'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END'],
-                          'INCARCERATION': ['INCARCERATION_LEN_DAYS','TOTAL_INCARCERATION_ALLPRIOR', 
-                                          'AVG_INCARCERATION_ALLPRIOR', 'TOTAL_INCARCERATION_LAST5YR', 
-                                          'AVG_INCARCERATION_LAST5YR'],
+                          'AGE': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE'],
                           'IMPUTE_ZERO': ['INFRACTIONS', 'INFRACTIONS_UNIQUE', 'INFRACTIONS_GUILTY',
                                           'INFRACTIONS_LAST_INCAR', 'INFRACTIONS_LAST_INCAR_GUILTY']
                            },
-             'INDICATOR': {'incorrect': ['INCARCERATION_LEN_DAYS'],
-                           'missing': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE', 
-                                       'AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END']
+             'INDICATOR': {'missing': ['AGE_AT_START_DATE', 'AGE_AT_END_DATE','AGE_FIRST_SENTENCE']
                            },
              'CONTINUOUS_VARS_MINMAX' : ['INCARCERATION_LEN_DAYS',
                                          'TOTAL_INCARCERATION_ALLPRIOR', 'NUM_PREV_INCARCERATION_ALLPRIOR', 
@@ -50,7 +44,7 @@ VARIABLES = {
              'VARS_TO_EXCLUDE' : ['ID', 'START_DATE', 'END_DATE', 'LABEL','SENTENCE_YEAR',
                                   'INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 
                                   'PREFIX', 'MINMAXTERM','COUNTY_CONVICTION', 'SENTENCING_PENALTY_CLASS_CODE',
-                                  'PRIMARY_OFFENSE_CODE', 'OFFENSE_QUALIFIER_CODE'],
+                                  'PRIMARY_OFFENSE_CODE', 'OFFENSE_QUALIFIER_CODE','AGE_AT_OFFENSE_START', 'AGE_AT_OFFENSE_END'],
              'NO_CLEANING_REQ': ['PREV_INCAR_INDIC', 'LABEL'],
              'BIAS': ['INMATE_RACE_CODE', 'INMATE_GENDER_CODE', 'label_value', 'id', 'score'],
              'BIAS_METRICS': {'metrics':['ppr','pprev','fnr','fpr', 'for'], 'min_group_size': None}
@@ -59,8 +53,9 @@ VARIABLES = {
 
 ## RUNNING THE MODELS
 GRIDSIZE = 'small'
-MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
-YEARS = [2016,2018]
+MODELS = ['DT']
+#MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
+YEARS = [1997,1997]
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
@@ -69,7 +64,7 @@ ID = 'ID'
 # plot pr: save or show or None
 PLOT_PR = 'save'
 # compute bias: true or false
-BIAS = True
+BIAS = False
 # save results: true or false
 SAVE_PRED = True
 # population threshold
@@ -110,7 +105,9 @@ def define_clfs_params(grid_size):
     'GB':   {'n_estimators': [10,100], 'learning_rate' : [0.1],'subsample' : [0.5],
              'max_depth': [5,10], 'random_state': [SEED]},
     'KNN':  {'n_neighbors': [10,25],'weights': ['uniform','distance'],'algorithm': ['auto']},
-    'DT':   {'criterion': ['gini', 'entropy'], 'max_depth': [1,5,10,20], 'min_samples_split': [2,10,50], 'random_state': [SEED]},
+    'DT':   {'criterion': ['gini', 'entropy'], 
+            'max_depth': [1],#'max_depth': [1,5,10,20], 
+            'min_samples_split': [2,10,50], 'random_state': [SEED]},
     'SVM':  {'C' :[0.01,0.1,1,10], 'random_state': [SEED]},
     'LR':   {'penalty': ['l1','l2'], 'C': [0.01,0.1,1,10], 'random_state': [SEED]},
     'BAG':  {'n_estimators': [10,100], 'n_jobs': [None], 'random_state': [SEED]},
