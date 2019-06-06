@@ -15,6 +15,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.model_selection import ParameterGrid 
 from sklearn.preprocessing import MinMaxScaler
 
+from sklearn import tree
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
@@ -29,9 +30,12 @@ from sklearn.metrics import roc_curve, precision_recall_curve
 
 import os
 import csv
+import graphviz
+import pydotplus
 import config
 from aequitas.group import Group
 from aequitas.plotting import Plot
+
 
 
 
@@ -597,6 +601,27 @@ def plot_bias(model_name, bias_df, bias_metrics = ['ppr','pprev','fnr','fpr', 'f
         p.show()
     return
 
+def visualize_tree(dt, feature_labels, class_labels, filename):
+    '''
+    Visualization of the decision tree
+    Inputs:
+        dt_model: DecisionTreeClassifier object
+        feature_labels: a list of labels for features
+        class_labels: a list of labels for target class
+        filename
+    Saves a png
+    '''
+    dot_data = StringIO()
+    graphviz.Source(tree.export_graphviz(dt, out_file=dot_data,
+                                         feature_names=feature_labels,
+                                         class_names=class_labels,
+                                         filled=True))
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
+    f = os.path.join(config.GRAPH_FOLDER,filename)
+    graph.write_png(f)
+
+
+
 def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, bias_dict, year,
     results_dir, results_file, plot_pr = None, compute_bias =False, save_pred=False):
     '''
@@ -657,6 +682,12 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             # fit model
             clfr.fit(X_train, y_train)
             
+            # saves decision tree
+            if isinstance(clfr, DecisionTreeClassifier):
+                filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
+                visualize_tree(clfr, attributes_lst, ['No','Yes'], filename)
+
+
             # add baseline for test set
             eval_result = [year, model, classifier, parameters, len(X_train), len(attributes_lst), len(X_test), baseline]
 
