@@ -70,6 +70,17 @@ def remove_outliers(df, attribute_lst, sd_threshold=3):
         df[attribute] = df[attribute][(np.abs(zscore(df[attribute])) < sd_threshold)]
     return df
 
+def na_col(df):
+    '''
+    This function identifies which columns in a dataframe have NA values
+    
+    df: dataframe
+    
+    returns: list of colnames with NA values
+    '''
+    
+    return df.columns[df.isna().any()].tolist()
+
 def na_fill_col(df, col, fill_method = np.mean):
     '''
     This function fills NA values in a df column by given method
@@ -774,8 +785,14 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     n_target = sum(test_set[label])
     n_observations = len(test_set[label])
     baseline = n_target/n_observations
-    #print(sum(test_set[label]))
-    #print(len(test_set[label]))
+    print('NA COLUMNS IN X_TRAIN:')
+    print(na_col(X_train))
+    print('NA COLUMNS IN X_TEST:')
+    print(na_col(X_test))
+    print('NA COLUMNS IN Y_TRAIN:')
+    print(na_col(y_train))
+    print('NA COLUMNS IN Y_TEST:')
+    print(na_col(y_test))
         
     features_txt = os.path.join(results_dir, "features_{}.txt".format(year))
     if not os.path.exists(features_txt):
