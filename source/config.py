@@ -9,6 +9,7 @@ DATABASE_FILENAME=CSVFOLDER + "inmates.db"
 DATA_DIR = CSVFOLDER + "traintest"
 
 # gender for model: 'MALE_' 'FEMALE_' or ''
+GENDERS = ['TOTAL, MALE, FEMALE']
 GENDER = 'MALE_'
 RESULTS_DIR = "results"
 GRAPH_FOLDER = GENDER + 'graphs'
@@ -53,9 +54,9 @@ VARIABLES = {
 
 ## RUNNING THE MODELS
 GRIDSIZE = 'small'
-MODELS = ['DT']
+MODELS = ['LR', 'DT', 'RF']
 #MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
-YEARS = [1997,1997]
+YEARS = [2016,2018]
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']

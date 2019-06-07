@@ -36,7 +36,7 @@ import pydotplus
 import config
 from aequitas.group import Group
 from aequitas.plotting import Plot
-
+from textwrap import wrap
 
 
 
@@ -381,7 +381,9 @@ def plot_precision_recall_n(precision, recall, pct_pop, model_name, subtitle, ou
         subtitle: subtitle
         output_type: (str) save or show
     '''
+    plt.clf()
     fig, ax1 = plt.subplots()
+
     #plot precision
     color = 'blue'
     ax1.set_xlabel('percent of population')
@@ -397,21 +399,13 @@ def plot_precision_recall_n(precision, recall, pct_pop, model_name, subtitle, ou
     ax2.tick_params(axis='y', labelcolor=color)
     plt.yticks(np.arange(0, 1.2, step=0.2))
     fig.tight_layout()  # otherwise the right y-label is slightly clipped
- 
-    # fig, ax1 = plt.subplots()
-    # ax1.set_xlabel('percent of population')
-    # ax1.set_ylabel('precision', color='b')
-    # ax1.plot(pct_pop, precision, 'b')
-    # ax2 = ax1.twinx()
-    # ax2.set_ylabel('recall', color='orange')
-    # ax2.plot(pct_pop, recall, 'orange')
-    # ax1.set_ylim([0,1])
-    # ax1.set_ylim([0,1])
-    # ax2.set_xlim([0,1])
-    ax1.axvline(x=0.1, ymin=0, ymax=1, color = 'gray')
-
-    plt.suptitle(model_name)
-    plt.title(subtitle)
+    fig.subplots_adjust(top=0.85)
+    
+    # plot vertical line for threshold
+    ax1.axvline(x=10, ymin=0, ymax=1, color = 'gray')
+    # set titles
+    ax1.set_title("\n".join(wrap(model_name, 60)))
+    plt.suptitle(subtitle)
 
     if (output_type == 'save'):
         pltfile = os.path.join(config.GRAPH_FOLDER,model_name)
@@ -488,6 +482,7 @@ def scores_pctpop(pred_scores, pct_pop):
     #set all observations to 0
     pred_df.iloc[:] = 0
     #set observations by index (the ones ranked high enough) to 1
+    #from IPython import embed; embed()
     pred_df.iloc[idx] = 1
     
     return list(pred_df)
@@ -673,7 +668,7 @@ def visualize_tree(dt, feature_labels, class_labels, filename):
 
 
 
-def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, bias_dict, year,
+def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, bias_dict, year, genders,
     results_dir, results_file, plot_pr = None, compute_bias =False, save_pred=False):
     '''
     This function fits a set of classifiers and a dataframe with performance measures for each
@@ -688,6 +683,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
         bias_lst: list of column names for bias 
         bias_dict: dictionary of metrics for bias computation
         year: year of data, for saving files
+        genders: list of genders to consider in the total model
         plot_pr: 'save', 'show', or None
         compute_bias: boolean whether or not to compute bias for each model
         save_pred: boolean whether to save final predictions
@@ -695,7 +691,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
         Dataframe containing performance measures for each classifier
     '''
     #initialize results
-    results_columns = (['year','model','classifiers', 'parameters', 'train_set_size', 'num_features', 'validation_set_size', 'baseline'] + eval_metrics + 
+    results_columns = (['year','gender','model','classifiers', 'parameters', 'train_set_size', 'num_features', 'validation_set_size', 'baseline'] + eval_metrics + 
                       [metric + '_' + str(level) for level in eval_metrics_by_level[1] for metric in eval_metrics_by_level[0]])
     
     # Write header for the csv
@@ -740,9 +736,6 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 print('decision tree saved')
 
 
-            # add baseline for test set
-            eval_result = [year, model, classifier, parameters, len(X_train), len(attributes_lst), len(X_test), baseline]
-
             # calculate scores
             if isinstance(clfr, LinearSVC):
                 y_pred_prob = clfr.decision_function(X_test)
@@ -776,40 +769,119 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 model_name = 'BIAS_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
                 plot_bias(model_name, bias_df, bias_metrics = bias_dict['metrics'], 
                     min_group_size = bias_dict['min_group_size'], output_type = 'save')
+            eval_result_t =[]
+            eval_result_m =[]
+            eval_result_f =[]
+            for gender in genders:
+                if gender == 'TOTAL':
+                    eval_result_t = [year, gender, model, classifier, parameters, len(X_train), len(attributes_lst), len(X_test), baseline]
 
-            # evaluate metrics
-            if eval_metrics:
-                eval_result += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]
-            
-            if eval_metrics_by_level[0]:
-                precision = []
-                recall = []
-                for level in eval_metrics_by_level[1]:
-                    y_pred = scores_pctpop(y_pred_prob, level)
-                    for metric in eval_metrics_by_level[0]:
-                        score = metrics[metric](y_test, y_pred)
-                        if metric == 'precision':
-                            precision.append(score)
-                        elif metric == 'recall':
-                            recall.append(score)
-                        eval_result += [score]
-            
+                    # evaluate metrics
+                    if eval_metrics:
+                        eval_result_t += [metrics[metric](y_test, y_pred_prob) for metric in eval_metrics]
+                    
+                    if eval_metrics_by_level[0]:
+                        precision = []
+                        recall = []
+                        for level in eval_metrics_by_level[1]:
+                            y_pred = scores_pctpop(y_pred_prob, level)
+                            for metric in eval_metrics_by_level[0]:
+                                score = metrics[metric](y_test, y_pred)
+                                if metric == 'precision':
+                                    precision.append(score)
+                                elif metric == 'recall':
+                                    recall.append(score)
+                                eval_result_t += [score]
+                    if plot_pr:
+                        model_name = 'PREDICTIONRC_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
+                        print('plotting precision recall for {}'.format(model_name))
+                        rec = recall_at_threshold(y_test, test_set['PREDICTION'])
+                        subtitle = 'Recall at {} is {}'.format(config.POP_THRESHOLD, rec)
+                        y_pred = scores_pctpop(y_pred_prob,100)
+                        thresholds = eval_metrics_by_level[1] + [100]
+                        precision.append(precision_at_threshold(y_test, y_pred))
+                        recall.append(recall_at_threshold(y_test, y_pred))
+                        plot_precision_recall_n(precision, recall, thresholds, model_name, subtitle, plot_pr)
+
+
+                elif gender == 'MALE':
+                    eval_result_m = [year, gender, model, classifier, parameters, len(X_train), len(attributes_lst), len(X_test), baseline]
+                    test_set_m = test_set[test_set['INMATE_GENDER_CODE_MALE']==1] 
+                    y_test_m = test_set_m[label]
+                    y_pred_prob_m = test_set_m['SCORE']
+                    print(y_pred_prob_m)
+                    if not test_set_m.empty:
+                        if eval_metrics:
+                            eval_result_m += [metrics[metric](y_test_m, y_pred_prob_m) for metric in eval_metrics]
+                        
+                        if eval_metrics_by_level[0]:
+                            # precision_m = []
+                            # recall_m = []
+                            for level in eval_metrics_by_level[1]:
+                                y_pred_m = scores_pctpop(y_pred_prob_m, level)
+                                for metric in eval_metrics_by_level[0]:
+                                    score = metrics[metric](y_test_m, y_pred_m)
+                                    # if metric == 'precision':
+                                    #     precision_m.append(score)
+                                    # elif metric == 'recall':
+                                    #     recall_m.append(score)
+                                    eval_result_m += [score]
+                    # if plot_pr:
+                    # model_name = 'PRC_{}_{}_{}_{}.png'.format(year, gender, model, str(parameters).replace(':','-'))
+                    # print('plotting precision recall for {} {}'.format(model_name, gender))
+                    # rec = recall_at_threshold(y_test, test_set['PREDICTION'])
+                    # subtitle = 'Recall at {} is {}'.format(config.POP_THRESHOLD, rec)
+                    # y_pred = scores_pctpop(y_pred_prob,100)
+                    # thresholds = eval_metrics_by_level[1] + [100]
+                    # precision.append(precision_at_threshold(y_test, y_pred))
+                    # recall.append(recall_at_threshold(y_test, y_pred))
+                    # plot_precision_recall_n(precision, recall, thresholds, model_name, subtitle, plot_pr)
+
+                elif gender == 'FEMALE':
+                    eval_result_f = [year, gender, model, classifier, parameters, len(X_train), len(attributes_lst), len(X_test), baseline]
+                    test_set_f = test_set[test_set['INMATE_GENDER_CODE_FEMALE']==1] 
+                    y_test_f = test_set_f[label]
+                    y_pred_prob_f = test_set_f['SCORE']
+                    print(y_pred_prob_f)
+
+                    if not test_set_f.empty:
+                    # evaluate metrics
+                    
+                        if eval_metrics:
+                            eval_result_f += [metrics[metric](y_test_f, y_pred_prob_f) for metric in eval_metrics]
+                
+                        if eval_metrics_by_level[0]:
+                            # precision_f = []
+                            # recall_f = []
+                            for level in eval_metrics_by_level[1]:
+                                y_pred_f = scores_pctpop(y_pred_prob_f, level)
+                                for metric in eval_metrics_by_level[0]:
+                                    score = metrics[metric](y_test_f, y_pred_f)
+                                    # if metric == 'precision':
+                                    #     precision_f.append(score)
+                                    # elif metric == 'recall':
+                                    #     recall_f.append(score)
+                                    eval_result_f += [score]
+                    # if plot_pr:
+                    # model_name = 'PRC_{}_{}_{}_{}.png'.format(year, gender, model, str(parameters).replace(':','-'))
+                    # print('plotting precision recall for {} {}'.format(model_name, gender))
+                    # rec = recall_at_threshold(y_test, test_set['PREDICTION'])
+                    # subtitle = 'Recall at {} is {}'.format(config.POP_THRESHOLD, rec)
+                    # y_pred = scores_pctpop(y_pred_prob,100)
+                    # thresholds = eval_metrics_by_level[1] + [100]
+                    # precision.append(precision_at_threshold(y_test, y_pred))
+                    # recall.append(recall_at_threshold(y_test, y_pred))
+                    # plot_precision_recall_n(precision, recall, thresholds, model_name, subtitle, plot_pr)
+                
             # writing out results in csv file
             with open(outfile, "a") as f:
                 csvwriter = csv.writer(f)
-                csvwriter.writerow(eval_result)
+                csvwriter.writerow(eval_result_t)
+                csvwriter.writerow(eval_result_m)
+                csvwriter.writerow(eval_result_f)
             
             # plot precision and recall if desired
-            if plot_pr:
-                model_name = 'PRC_{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
-                print('plotting precision recall for {}'.format(model_name))
-                rec = recall_at_threshold(y_test, test_set['PREDICTION'])
-                subtitle = 'Recall at {} is {}'.format(config.POP_THRESHOLD, rec)
-                y_pred = scores_pctpop(y_pred_prob,100)
-                thresholds = eval_metrics_by_level[1] + [100]
-                precision.append(precision_at_threshold(y_test, y_pred))
-                recall.append(recall_at_threshold(y_test, y_pred))
-                plot_precision_recall_n(precision, recall, thresholds, model_name, subtitle, plot_pr)
+
 
             
 

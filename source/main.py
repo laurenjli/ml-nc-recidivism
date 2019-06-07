@@ -60,11 +60,11 @@ def preprocess(df, variables=config.VARIABLES):
         if attribute == 'MINMAXTERM':
             r = {'MAX.TERM:,MIN.TERM:': 'MIN.TERM:,MAX.TERM:'}
             df['MINMAXTERM'] = df['MINMAXTERM'].replace(r)
-            
+
     return pp.categorical_to_dummy(df, variables['CATEGORICAL_VARS'])
 
 #def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
-def main(gender = config.GENDER, data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=config.RESULTS_FILE, graphs_dir = config.GRAPH_FOLDER,
+def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=config.RESULTS_FILE, graphs_dir = config.GRAPH_FOLDER,
          variables=config.VARIABLES, models=config.MODELS, eval_metrics=config.EVAL_METRICS,
          eval_metrics_by_level=config.EVAL_METRICS_BY_LEVEL, grid=config.define_clfs_params(config.GRIDSIZE), 
          period=config.YEARS, plot_pr = config.PLOT_PR, compute_bias = config.BIAS, save_pred = config.SAVE_PRED):
@@ -86,7 +86,7 @@ def main(gender = config.GENDER, data_dir=config.DATA_DIR, results_dir=config.RE
 
     while year <= period[1]:
         print('Running year: {}'.format(year))
-
+        '''
         # check if training/test data exists, create it if not
         test_csv = os.path.join(data_dir, "test_{}_test.csv".format(year))
         train_csv = os.path.join(data_dir, "test_{}_train.csv".format(year))
@@ -104,10 +104,12 @@ def main(gender = config.GENDER, data_dir=config.DATA_DIR, results_dir=config.RE
             print('Gender filter: male (and missing)')
             df_test = df_test[df_test['INMATE_GENDER_CODE'] != 'FEMALE']
             df_train = df_train[df_train['INMATE_GENDER_CODE'] != 'FEMALE']
+            genders = ['MALE']
         elif gender == 'FEMALE_':
             print('Gender filter: female (and missing)')
             df_test = df_test[df_test['INMATE_GENDER_CODE'] != 'MALE']
             df_train = df_train[df_train['INMATE_GENDER_CODE'] != 'MALE']
+            genders = ['FEMALE']
 
         # Pre-process data 
         print('Pre-processing data')
@@ -132,10 +134,20 @@ def main(gender = config.GENDER, data_dir=config.DATA_DIR, results_dir=config.RE
         print('Training set has {} features'.format(len(attributes_lst)))
         #print(df_train['INMATE_GENDER_CODE'].unique())
         #print(df_test['INMATE_GENDER_CODE'].unique())
+        df_train.to_csv("train.csv")
+        df_test.to_csv("test.csv")
+        '''
+        df_test = pp.get_csv("test.csv")
+        df_train = pp.get_csv("train.csv")
+        attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
+        #bias_lst = variables['BIAS']
+        for attr in attributes_lst:
+            if attr not in df_test.columns:
+                df_test.loc[:,attr] = 0
 
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 
-            bias_lst, bias_dict, year, results_dir, results_file, plot_pr, compute_bias, save_pred)
+            bias_lst, bias_dict, year, genders, results_dir, results_file, plot_pr, compute_bias, save_pred)
         # # add year
         # results[config.TRAIN_TEST_COL] = year
         # # add baseline for test set
