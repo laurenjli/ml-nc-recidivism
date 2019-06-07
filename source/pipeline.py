@@ -785,14 +785,6 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     n_target = sum(test_set[label])
     n_observations = len(test_set[label])
     baseline = n_target/n_observations
-    print('NA COLUMNS IN X_TRAIN:')
-    print(na_col(X_train))
-    print('NA COLUMNS IN X_TEST:')
-    print(na_col(X_test))
-    print('NA COLUMNS IN Y_TRAIN:')
-    print(y_train.isnull().values.any())
-    print('NA COLUMNS IN Y_TEST:')
-    print(y_test.isnull().values.any())
         
     features_txt = os.path.join(results_dir, "features_{}.txt".format(year))
     if not os.path.exists(features_txt):
@@ -809,7 +801,14 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             print('Running model: {}, param: {}'.format(model, parameters))
             # set parameters
             clfr = classifier.set_params(**parameters)
-            
+            print('NA COLUMNS IN X_TRAIN:')
+            print(na_col(X_train))
+            print('NA COLUMNS IN X_TEST:')
+            print(na_col(X_test))
+            print('NA COLUMNS IN Y_TRAIN:')
+            print(y_train.isnull().values.any())
+            print('NA COLUMNS IN Y_TEST:')
+            print(y_test.isnull().values.any())
             # unscale, fit and saves decision tree
             if isinstance(clfr, DecisionTreeClassifier):
                 for attribute in variables['CONTINUOUS_VARS_MINMAX']:
