@@ -34,7 +34,7 @@ def preprocess(df, variables=config.VARIABLES):
         for attr in attributes:
             df = pp.create_indicator(df, attr, fill)
     
-    ## missing imputation
+    ## missing age imputation
     for attribute in variables['MISSING']['AGE']:
         year_col = 'SENTENCE_YEAR'
         pen_col = 'PRIMARY_OFFENSE_CODE'
@@ -44,11 +44,6 @@ def preprocess(df, variables=config.VARIABLES):
     
     for attribute in variables['MISSING']['MISSING_CAT']:
         df = pp.impute_missing(df, attribute)
-
-    # for attribute in variables['MISSING']['INCARCERATION']:
-    #     offense_col = 'PRIMARY_OFFENSE_CODE'
-    #     pen_col = 'SENTENCING_PENALTY_CLASS_CODE'
-    #     df = pp.impute_with_2cols(df, offense_col, pen_col, attribute)
 
     for attribute in variables['MISSING']['IMPUTE_ZERO']:
         df = pp.impute_missing(df, attribute, 0)
@@ -131,13 +126,10 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
 
         # define list of features
         attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
-        #bias_lst = variables['BIAS']
         for attr in attributes_lst:
             if attr not in df_test.columns:
                 df_test.loc[:,attr] = 0
         print('Training set has {} features'.format(len(attributes_lst)))
-        #print(df_train['INMATE_GENDER_CODE'].unique())
-        #print(df_test['INMATE_GENDER_CODE'].unique())
         
         #For debugging the classify function
         #df_train.to_csv("train.csv")
@@ -146,17 +138,6 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 
             bias_lst, bias_dict, year, genders, scaler, variables, results_dir, results_file, plot_pr, compute_bias, save_pred)
-        # # add year
-        # results[config.TRAIN_TEST_COL] = year
-        # # add baseline for test set
-        # results['baseline'] = sum(df_test[label])/len(df_test[label])
-
-        # # save results
-        # if year == first_year:
-        #     results.to_csv(os.path.join(results_dir, results_file), index=False)
-        # else:
-        #     with open(os.path.join(results_dir, results_file), 'a') as f:
-        #         results.to_csv(f, header=False, index=False) 
 
         year += 1
 
