@@ -36,6 +36,7 @@ from aequitas.group import Group
 from aequitas.plotting import Plot
 from textwrap import wrap
 
+SCALING_DT = True
 
 
 ## Get Data
@@ -733,7 +734,7 @@ def get_results(test_set, label, eval_metrics, eval_metrics_by_level, eval_resul
     return eval_result
 
 def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, bias_dict, year, genders,
-    results_dir, results_file, plot_pr = None, compute_bias =False, save_pred=False):
+    scaler, variables, results_dir, results_file, plot_pr = None, compute_bias =False, save_pred=False):
     '''
     This function fits a set of classifiers and a dataframe with performance measures for each
     Input:
@@ -748,6 +749,9 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
         bias_dict: dictionary of metrics for bias computation
         year: year of data, for saving files
         genders: list of genders to consider in the total model
+        scaler: scaler for continuous var
+        variables: variable dictionary we care about
+        results_dir/results_file
         plot_pr: 'save', 'show', or None
         compute_bias: boolean whether or not to compute bias for each model
         save_pred: boolean whether to save final predictions
@@ -790,14 +794,18 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             print('Running model: {}, param: {}'.format(model, parameters))
             # set parameters
             clfr = classifier.set_params(**parameters)
-            # fit model
-            clfr.fit(X_train, y_train)
             
-            # saves decision tree
+            # unscale, fit and saves decision tree
             if isinstance(clfr, DecisionTreeClassifier):
+                for attribute in variables['CONTINUOUS_VARS_MINMAX']:
+                    X_train[attribute] = scaler.inverse_transform(X_train[attribute].values.reshape(-1, 1))
+                clfr.fit(X_train, y_train)
                 filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
                 visualize_tree(clfr, attributes_lst, ['No','Yes'], filename, config.VISUALIZE_DT)
                 print('decision tree saved')
+            else:
+                clfr.fit(X_train, y_train)
+
             
             # Get feature importance
             filename = 'FIMPORTANCE_{}_{}_{}.csv'.format(year, model, str(parameters).replace(':','-'))

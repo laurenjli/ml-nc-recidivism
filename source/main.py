@@ -141,7 +141,7 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
     
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 
-            bias_lst, bias_dict, year, genders, results_dir, results_file, plot_pr, compute_bias, save_pred)
+            bias_lst, bias_dict, year, genders, scaler, variables, results_dir, results_file, plot_pr, compute_bias, save_pred)
         # # add year
         # results[config.TRAIN_TEST_COL] = year
         # # add baseline for test set
