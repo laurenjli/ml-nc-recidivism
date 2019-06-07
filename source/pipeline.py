@@ -790,9 +790,9 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     print('NA COLUMNS IN X_TEST:')
     print(na_col(X_test))
     print('NA COLUMNS IN Y_TRAIN:')
-    print(na_col(y_train.isnull().values.any()))
+    print(y_train.isnull().values.any())
     print('NA COLUMNS IN Y_TEST:')
-    print(na_col(y_test.isnull().values.any()))
+    print(y_test.isnull().values.any())
         
     features_txt = os.path.join(results_dir, "features_{}.txt".format(year))
     if not os.path.exists(features_txt):
