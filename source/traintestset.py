@@ -81,7 +81,7 @@ def full_traintest(time_period=365.0):
     ft.add_all_features() # Create new table data for features and data
 
     test_year=1997
-    while test_year <= 2018:
+    while test_year <= 2017:
         temporal_validation('test_'+ str(test_year), train_start_year=1995, test_start_year=test_year, time_period=time_period)
         test_year += 1
 
@@ -89,7 +89,7 @@ if __name__ == '__main__':
     #full_traintest()
     time_period = 365.0
     test_year=1997
-    while test_year <= 2018:
+    while test_year <= 2017:
         temporal_validation('test_'+ str(test_year), train_start_year=1995, test_start_year=test_year, time_period=time_period)
         test_year += 1
 
