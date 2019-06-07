@@ -13,7 +13,7 @@ GENDER = 'FEMALE_'
 GENDERS = ['TOTAL', 'MALE', 'FEMALE']
 RESULTS_DIR = GENDER + "results"
 GRAPH_FOLDER = GENDER + 'graphs'
-RESULTS_FILE = GENDER + "unscaled_results"
+RESULTS_FILE = GENDER + "results"
 TRAIN_TEST_COL = 'year'
 SEED = 0
 
