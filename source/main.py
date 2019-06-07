@@ -71,7 +71,7 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
 
     # check if necessary data and results directories exist
     if not os.path.exists(data_dir):
-        os.mkdir(config.data_dir)
+        os.mkdir(data_dir)
     if not os.path.exists(results_dir):
         os.mkdir(results_dir)
     if not os.path.exists(graphs_dir):
