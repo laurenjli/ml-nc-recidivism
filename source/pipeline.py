@@ -4,8 +4,6 @@
 ## Importing Packeges
 import pandas as pd
 import numpy as np
-import requests
-import math
 import sys
 import graphviz 
 import matplotlib.pyplot as plt
@@ -647,7 +645,7 @@ def plot_bias(model_name, bias_df, bias_metrics = ['ppr','pprev','fnr','fpr', 'f
         p.show()
     return
 
-def visualize_tree(dt, feature_labels, class_labels, filename):
+def visualize_tree(dt, feature_labels, class_labels, filename, save):
     '''
     Visualization of the decision tree
     Inputs:
@@ -655,6 +653,7 @@ def visualize_tree(dt, feature_labels, class_labels, filename):
         feature_labels: a list of labels for features
         class_labels: a list of labels for target class
         filename
+        save: True or False
     Saves a png
     '''
     dot_data = StringIO()
@@ -662,9 +661,45 @@ def visualize_tree(dt, feature_labels, class_labels, filename):
                                          feature_names=feature_labels,
                                          class_names=class_labels,
                                          filled=True))
-    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())  
-    f = os.path.join(config.GRAPH_FOLDER,filename)
-    graph.write_png(f)
+    graph = pydotplus.graph_from_dot_data(dot_data.getvalue())
+    if save:  
+        f = os.path.join(config.GRAPH_FOLDER,filename)
+        graph.write_png(f)
+
+def get_feature_importance(clfr, features, filename, save):
+    '''
+    Get the feature importance of each feature
+    Inputs:
+        clfr: classifier
+        features: list of features
+        filename
+        save: True or False
+    Return a dataframe of feature importance
+    '''
+    d = {'Features': features}
+    if (isinstance(clfr, LogisticRegression) or
+        isinstance(clfr, LinearSVC) or 
+        isinstance(clfr, MultinomialNB)):
+        # Logistic Regression, SVM, Naive Bayes
+        d['Importance'] = clfr.coef_[0]
+    else:
+        try:
+        # Works for Random forest, Decision trees, Extra trees,
+        # Gradient boosting, Adaboost 
+            d['Importance'] = clfr.feature_importances_
+        except:
+        # K-nearest neighbors, bagging
+            print('feature importance not found for {}'.format(clfr))
+            return
+    
+    feature_importance = pd.DataFrame(data=d)
+    feature_importance = feature_importance.sort_values(by=['Importance'],
+                                                        ascending=False)
+    if save:
+        f = os.path.join(config.RESULTS_DIR,filename) 
+        feature_importance.to_csv(f)
+
+    return feature_importance
 
 
 
@@ -732,8 +767,12 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             # saves decision tree
             if isinstance(clfr, DecisionTreeClassifier):
                 filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
-                visualize_tree(clfr, attributes_lst, ['No','Yes'], filename)
+                visualize_tree(clfr, attributes_lst, ['No','Yes'], filename, config.VISUALIZE_DT)
                 print('decision tree saved')
+            
+            # Get feature importance
+            filename = 'FIMPORTANCE_{}_{}_{}.csv'.format(year, model, str(parameters).replace(':','-'))
+            get_feature_importance(clfr, attributes_lst, filename, config.FEATURE_IMP)
 
 
             # calculate scores

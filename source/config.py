@@ -56,7 +56,7 @@ VARIABLES = {
 GRIDSIZE = 'small'
 MODELS = ['LR', 'DT', 'RF']
 #MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
-YEARS = [2016,2018]
+YEARS = [1997,1997]
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
@@ -64,8 +64,12 @@ ID = 'ID'
 
 # plot pr: save or show or None
 PLOT_PR = 'save'
+# visualize decision tree
+VISUALIZE_DT = True
+# save feature importance
+FEATURE_IMP = True
 # compute bias: true or false
-BIAS = False
+BIAS = True
 # save results: true or false
 SAVE_PRED = True
 # population threshold
