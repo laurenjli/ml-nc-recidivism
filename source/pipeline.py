@@ -701,7 +701,7 @@ def get_feature_importance(clfr, features, filename, save):
 
     return feature_importance
 
-def get_results(test_set, label, eval_metrics, eval_metrics_by_level, eval_result, model_name, plot_pr=True):
+def get_results(test_set, label, eval_metrics, eval_metrics_by_level, eval_result, model_name, plot_pr):
     y_test = test_set[label]
     y_pred_prob = test_set['SCORE']
     # evaluate metrics
@@ -847,7 +847,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                     test_set_g = test_set
                 eval_result = [year, gender, model, classifier, parameters, len(X_train), len(attributes_lst), len(X_test), baseline]
                 model_name = 'PREDICTIONRC_{}_{}_{}_{}.png'.format(year, gender, model, str(parameters).replace(':','-'))   
-                eval_result = get_results(test_set_g, label, eval_metrics, eval_metrics_by_level, eval_result, model_name, True)
+                eval_result = get_results(test_set_g, label, eval_metrics, eval_metrics_by_level, eval_result, model_name, plot_pr)
 
             # writing out results in csv file
                 with open(outfile, "a") as f:
