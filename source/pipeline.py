@@ -413,7 +413,7 @@ def plot_precision_recall_n(precision, recall, pct_pop, model_name, subtitle, ou
     ax1.axvline(x=10, ymin=0, ymax=1, color = 'gray')
     # set titles
     ax1.set_title("\n".join(wrap(model_name, 60)))
-    plt.suptitle(subtitle)
+    plt.suptitle(subtitle, fontsize=12)
 
     if (output_type == 'save'):
         pltfile = os.path.join(config.GRAPH_FOLDER,model_name)
@@ -801,24 +801,17 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             print('Running model: {}, param: {}'.format(model, parameters))
             # set parameters
             clfr = classifier.set_params(**parameters)
-            print('NA COLUMNS IN X_TRAIN:')
-            print(na_col(X_train))
-            print('NA COLUMNS IN X_TEST:')
-            print(na_col(X_test))
-            print('NA COLUMNS IN Y_TRAIN:')
-            print(y_train.isnull().values.any())
-            print('NA COLUMNS IN Y_TEST:')
-            print(y_test.isnull().values.any())
+            
             # unscale, fit and saves decision tree
-            if isinstance(clfr, DecisionTreeClassifier):
-                for attribute in variables['CONTINUOUS_VARS_MINMAX']:
-                    X_train[attribute] = scaler.inverse_transform(X_train[attribute].values.reshape(-1, 1))
-                clfr.fit(X_train, y_train)
-                filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
-                visualize_tree(clfr, attributes_lst, ['No','Yes'], filename, config.VISUALIZE_DT)
-                print('decision tree saved')
-            else:
-                clfr.fit(X_train, y_train)
+            # if isinstance(clfr, DecisionTreeClassifier):
+            #     for attribute in variables['CONTINUOUS_VARS_MINMAX']:
+            #         X_train[attribute] = scaler.inverse_transform(X_train[attribute].values.reshape(-1, 1))
+            #     clfr.fit(X_train, y_train)
+            #     filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
+            #     visualize_tree(clfr, attributes_lst, ['No','Yes'], filename, config.VISUALIZE_DT)
+            #     print('decision tree saved')
+            # else:
+            clfr.fit(X_train, y_train)
 
             
             # Get feature importance
@@ -868,7 +861,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 else:
                     test_set_g = test_set
                 eval_result = [year, gender, model, classifier, parameters, len(X_train), len(attributes_lst), len(X_test), baseline]
-                model_name = 'PREDICTIONRC_{}_{}_{}_{}.png'.format(year, gender, model, str(parameters).replace(':','-'))   
+                model_name = 'PRC_{}_{}_{}_{}.png'.format(year, gender, model, str(parameters).replace(':','-'))   
                 eval_result = get_results(test_set_g, label, eval_metrics, eval_metrics_by_level, eval_result, model_name, plot_pr)
 
             # writing out results in csv file
