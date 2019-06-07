@@ -122,6 +122,54 @@ def impute_with_2cols(df, year_col, pen_col, target_col):
     df[target_col] = cp[target_col]
     return df
 
+def impute_age(df, year_col, pen_col, len_col, age_start, age_end, age_first):
+    '''
+    This function creates a missing binary column and imputes age using the 
+    helper column values given year of crime and sentencing penalty class code
+
+    df: dataframe
+    year_col: colname with date of offense
+    pen_col: colname with penalty class code info
+    len_col: colname with incarceration length
+    base_col: colname to base off the target_col off of
+    target_col: column to impute
+
+    returns dataframe with imputed data
+    Used in main.py
+    '''
+    def find_mean(year, pen_class, target_col):
+        tmp = df[(df[year_col] == year) & (df[pen_col] == pen_class)]
+        return np.mean(tmp[target_col])
+    
+    def find_mean_diff(year, pen_class, base_col, target_col):
+        tmp = df[(df[year_col] == year) & (df[pen_col] == pen_class)]
+        return np.mean(tmp[base_col] - tmp[target_col])
+    
+    # copy dataframe to impute values then reinsert into df
+    cp = df.copy()
+    #cp[target_col]= cp.apply(lambda row: find_mean(row[year_col], row[pen_col], age_start) if pd.isnull(row[target_col]) else row[target_col], axis=1)
+    
+    # impute age start
+    # start with imputing by end age and incarceration length if possible
+    cp.loc[cp[age_start].isna(), age_start] = cp[age_end] - cp[len_col]/365.0
+    # then try to take mean age start based off of year and primary offense code
+    cp[age_start]= cp.apply(lambda row: find_mean(row[year_col], row[pen_col], age_start) if pd.isnull(row[age_start]) else row[age_start], axis=1)
+    # last resort: average age over all
+    cp.loc[cp[age_start].isna(), age_start] = np.mean(cp[age_start])
+    
+    # impute age end
+    cp.loc[cp[age_end].isna(), age_end] = cp[age_start] + cp[len_col]/365.0
+
+    # impute age first
+    # try to impute based on age difference given year and primary offense
+    cp[age_first]= cp.apply(lambda row: row[age_start] - find_mean_diff(row[year_col], row[pen_col], age_start, age_first) if pd.isnull(row[age_first]) else row[age_first], axis=1)
+    # otherwise impute based on overall mean age difference
+    cp.loc[cp[age_first].isna(), age_first] = cp[age_start] - np.mean(cp[age_start] - cp[age_first])
+    
+    df[age_start] = cp[age_start]
+    df[age_end] = cp[age_end]
+    df[age_first] = cp[age_first]
+    return df
 
 def fill_nan(df, attributes_lst, how='mean'):
     '''

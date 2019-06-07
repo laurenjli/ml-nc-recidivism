@@ -38,7 +38,9 @@ def preprocess(df, variables=config.VARIABLES):
     for attribute in variables['MISSING']['AGE']:
         year_col = 'SENTENCE_YEAR'
         pen_col = 'PRIMARY_OFFENSE_CODE'
-        df = pp.impute_with_2cols(df, year_col, pen_col, attribute)
+        len_col = 'INCARCERATION_LEN_DAYS'
+        df = pp.impute_age(df, year_col, pen_col, len_col, 'AGE_AT_START_DATE', 'AGE_AT_END_DATE', 'AGE_FIRST_SENTENCE')
+
     
     for attribute in variables['MISSING']['MISSING_CAT']:
         df = pp.impute_missing(df, attribute)
