@@ -36,8 +36,6 @@ from aequitas.group import Group
 from aequitas.plotting import Plot
 from textwrap import wrap
 
-SCALING_DT = True
-
 
 ## Get Data
 
