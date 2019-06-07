@@ -11,7 +11,7 @@ DATA_DIR = CSVFOLDER + "traintest"
 # gender for model: 'MALE_' 'FEMALE_' or ''
 GENDER = 'MALE_'
 GENDERS = ['TOTAL', 'MALE', 'FEMALE']
-RESULTS_DIR = "results"
+RESULTS_DIR = GENDER + "results"
 GRAPH_FOLDER = GENDER + 'graphs'
 RESULTS_FILE = GENDER + "results"
 TRAIN_TEST_COL = 'year'
@@ -59,7 +59,7 @@ VARIABLES = {
 GRIDSIZE = 'small'
 MODELS = ['LR', 'DT', 'RF']
 #MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
-YEARS = [2016,2018]
+YEARS = [2015,2017]
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
