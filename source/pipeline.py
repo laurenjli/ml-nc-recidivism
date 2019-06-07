@@ -803,15 +803,16 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             clfr = classifier.set_params(**parameters)
             
             # unscale, fit and saves decision tree
-            # if isinstance(clfr, DecisionTreeClassifier):
-            #     for attribute in variables['CONTINUOUS_VARS_MINMAX']:
-            #         X_train[attribute] = scaler.inverse_transform(X_train[attribute].values.reshape(-1, 1))
-            #     clfr.fit(X_train, y_train)
-            #     filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
-            #     visualize_tree(clfr, attributes_lst, ['No','Yes'], filename, config.VISUALIZE_DT)
-            #     print('decision tree saved')
-            # else:
-            clfr.fit(X_train, y_train)
+            if isinstance(clfr, DecisionTreeClassifier):
+                for attribute in variables['CONTINUOUS_VARS_MINMAX']:
+                    X_train[attribute] = scaler.inverse_transform(X_train[attribute].values.reshape(-1, 1))
+                    X_test[attribute] = scaler.inverse_transform(X_test[attribute].values.reshape(-1, 1))
+                clfr.fit(X_train, y_train)
+                filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
+                visualize_tree(clfr, attributes_lst, ['No','Yes'], filename, config.VISUALIZE_DT)
+                print('decision tree saved')
+            else:
+                clfr.fit(X_train, y_train)
 
             
             # Get feature importance
