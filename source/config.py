@@ -9,11 +9,11 @@ DATABASE_FILENAME=CSVFOLDER + "inmates.db"
 DATA_DIR = CSVFOLDER + "traintest"
 
 # gender for model: 'MALE_' 'FEMALE_' or ''
-GENDER = 'MALE_'
+GENDER = 'FEMALE_'
 GENDERS = ['TOTAL', 'MALE', 'FEMALE']
 RESULTS_DIR = GENDER + "results"
 GRAPH_FOLDER = GENDER + 'graphs'
-RESULTS_FILE = GENDER + "results"
+RESULTS_FILE = GENDER + "unscaled_results"
 TRAIN_TEST_COL = 'year'
 SEED = 0
 
@@ -37,10 +37,10 @@ VARIABLES = {
                                          'NUM_PREV_INCARCERATION_LAST5YR', 'AVG_INCARCERATION_LAST5YR',
                                          'NUM_SENTENCES', 'TOTAL_SENT_ALLPRIOR', 
                                          'AVG_SENT_ALLPRIOR', 'TOTAL_SENT_LAST5YR', 
-                                         'AVG_SENT_LAST5YR'], 
-                                        # 'AGE_AT_START_DATE', 'AGE_AT_END_DATE',
-                                        # 'AGE_FIRST_SENTENCE', 'INFRACTIONS', 'INFRACTIONS_UNIQUE', 'INFRACTIONS_GUILTY',
-                                        # 'INFRACTIONS_LAST_INCAR', 'INFRACTIONS_LAST_INCAR_GUILTY'],
+                                         'AVG_SENT_LAST5YR', 
+                                        'AGE_AT_START_DATE', 'AGE_AT_END_DATE', 'AGE_FIRST_SENTENCE',
+                                        'INFRACTIONS', 'INFRACTIONS_UNIQUE', 'INFRACTIONS_GUILTY',
+                                        'INFRACTIONS_LAST_INCAR', 'INFRACTIONS_LAST_INCAR_GUILTY'],
              'CATEGORICAL_VARS' : ['MINMAXTERM','INMATE_RACE_CODE', 'INMATE_GENDER_CODE',
                                    'PREFIX'],
              'SPECIAL_DUMMY': ['COUNTY_CONVICTION', 'SENTENCING_PENALTY_CLASS_CODE','PRIMARY_OFFENSE_CODE', 
@@ -57,9 +57,9 @@ VARIABLES = {
 
 ## RUNNING THE MODELS
 GRIDSIZE = 'small'
-MODELS = ['LR', 'DT', 'RF']
+MODELS = ['LR', 'DT', 'RF', 'GB']
 #MODELS = ['RF', 'ET', 'GB', 'AB', 'BAG', 'DT', 'KNN', 'LR', 'SVM', 'NB']
-YEARS = [2015,2017]
+YEARS = [2010, 2017]
 EVAL_METRICS_BY_LEVEL = (['accuracy', 'precision', 'recall', 'f1'],\
                          [1,2,5,10,20,30,50])
 EVAL_METRICS = ['auc']
