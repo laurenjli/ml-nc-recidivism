@@ -86,7 +86,7 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
 
     while year <= period[1]:
         print('Running year: {}'.format(year))
-        '''
+        
         # check if training/test data exists, create it if not
         test_csv = os.path.join(data_dir, "test_{}_test.csv".format(year))
         train_csv = os.path.join(data_dir, "test_{}_train.csv".format(year))
@@ -134,17 +134,11 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
         print('Training set has {} features'.format(len(attributes_lst)))
         #print(df_train['INMATE_GENDER_CODE'].unique())
         #print(df_test['INMATE_GENDER_CODE'].unique())
-        df_train.to_csv("train.csv")
-        df_test.to_csv("test.csv")
-        '''
-        df_test = pp.get_csv("test.csv")
-        df_train = pp.get_csv("train.csv")
-        attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
-        #bias_lst = variables['BIAS']
-        for attr in attributes_lst:
-            if attr not in df_test.columns:
-                df_test.loc[:,attr] = 0
-
+        
+        #For debugging the classify function
+        #df_train.to_csv("train.csv")
+        #df_test.to_csv("test.csv")
+    
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 
             bias_lst, bias_dict, year, genders, results_dir, results_file, plot_pr, compute_bias, save_pred)
