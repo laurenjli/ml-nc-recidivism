@@ -104,11 +104,15 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
             print('Gender filter: male (and missing)')
             df_test = df_test[df_test['INMATE_GENDER_CODE'] != 'FEMALE']
             df_train = df_train[df_train['INMATE_GENDER_CODE'] != 'FEMALE']
+            df_test.reset_index(drop=True, inplace=True)
+            df_train.reset_index(drop=True, inplace=True)
             genders = ['MALE']
         elif gender == 'FEMALE_':
             print('Gender filter: female (and missing)')
             df_test = df_test[df_test['INMATE_GENDER_CODE'] != 'MALE']
             df_train = df_train[df_train['INMATE_GENDER_CODE'] != 'MALE']
+            df_test.reset_index(drop=True, inplace=True)
+            df_train.reset_index(drop=True, inplace=True)
             genders = ['FEMALE']
 
         # Pre-process data 
