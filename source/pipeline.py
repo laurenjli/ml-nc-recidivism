@@ -379,14 +379,14 @@ def plot_scores_hist(df,col_score, model_name, output_type = 'save'):
         plt.show()
 
 
-def plot_precision_recall_n(precision, recall, pct_pop, model_name, subtitle, output_type):
+def plot_precision_recall_n(precision, recall, pct_pop, model_name, text, output_type):
     '''
     Plot precision and recall for each threshold
     Inputs:
         y_true: real labels for testing set
         y_prob: array of predicted scores from model
         model_name: (str) title for plot
-        subtitle: subtitle
+        text: text
         output_type: (str) save or show
     '''
     plt.clf()
@@ -413,7 +413,7 @@ def plot_precision_recall_n(precision, recall, pct_pop, model_name, subtitle, ou
     ax1.axvline(x=10, ymin=0, ymax=1, color = 'gray')
     # set titles
     ax1.set_title("\n".join(wrap(model_name, 60)))
-    plt.suptitle(subtitle, fontsize=12)
+    plt.text(55, 0.4, text)
 
     if (output_type == 'save'):
         pltfile = os.path.join(config.GRAPH_FOLDER,model_name)
@@ -711,7 +711,7 @@ def get_feature_importance(clfr, features, filename, save):
 
     return feature_importance
 
-def get_results(test_set, label, eval_metrics, eval_metrics_by_level, eval_result, model_name, plot_pr):
+def get_results(test_set, label, eval_metrics, eval_metrics_by_level, eval_result, threshold, model_name, plot_pr):
     y_test = test_set[label]
     y_pred_prob = test_set['SCORE']
     # evaluate metrics
@@ -729,17 +729,20 @@ def get_results(test_set, label, eval_metrics, eval_metrics_by_level, eval_resul
                     precision.append(score)
                 elif metric == 'recall':
                     recall.append(score)
+                    if level == threshold:
+                        rec = score
                 eval_result += [score]
     # plot precision and recall if desired
     if plot_pr:    
         print('plotting precision recall for {}'.format(model_name))
-        rec = recall_at_threshold(y_test, test_set['PREDICTION'])
-        subtitle = 'Recall at {} is {}'.format(config.POP_THRESHOLD, rec)
+        text = 'Recall at {} is {}'.format(threshold, round(rec,3))
+        # add last point on curve at 100%
         y_pred = scores_pctpop(y_pred_prob,100)
         thresholds = eval_metrics_by_level[1] + [100]
         precision.append(precision_at_threshold(y_test, y_pred))
         recall.append(recall_at_threshold(y_test, y_pred))
-        plot_precision_recall_n(precision, recall, thresholds, model_name, subtitle, plot_pr)
+        # plot graph
+        plot_precision_recall_n(precision, recall, thresholds, model_name, text, plot_pr)
     return eval_result
 
 def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_level, custom_grid, attributes_lst, bias_lst, bias_dict, year, genders,
@@ -799,10 +802,6 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             cont = variables['CONTINUOUS_VARS_MINMAX']
             X_train[cont] = scaler.inverse_transform(X_train[cont])
             X_test[cont] = scaler.inverse_transform(X_test[cont])
-            # print('INF IN X_TRAIN: ')
-            # print(X_train.columns.to_series()[np.isinf(X_train).any()])
-            # print('INF IN X_TEST: ')
-            # print(X_test.columns.to_series()[np.isinf(X_test).any()])
 
         #create parameters grids
         grid = ParameterGrid(custom_grid[model])
@@ -866,7 +865,7 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                     test_set_g = test_set
                 eval_result = [year, gender, model, classifier, parameters, len(X_train), len(attributes_lst), len(X_test), baseline]
                 model_name = 'PRC_{}_{}_{}_{}.png'.format(year, gender, model, str(parameters).replace(':','-'))   
-                eval_result = get_results(test_set_g, label, eval_metrics, eval_metrics_by_level, eval_result, model_name, plot_pr)
+                eval_result = get_results(test_set_g, label, eval_metrics, eval_metrics_by_level, eval_result, config.POP_THRESHOLD, model_name, plot_pr)
 
             # writing out results in csv file
                 with open(outfile, "a") as f:

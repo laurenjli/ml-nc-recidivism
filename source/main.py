@@ -123,7 +123,7 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
         s = scaler.fit(data_for_fitting)
         df_train[cont] = scaler.transform(df_train[cont])
         df_test[cont] = scaler.transform(df_test[cont])
-        print(scaler.scale_)
+        #print(scaler.scale_)
 
         # define list of features
         attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
