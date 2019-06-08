@@ -58,7 +58,7 @@ def preprocess(df, variables=config.VARIABLES):
 
     return pp.categorical_to_dummy(df, variables['CATEGORICAL_VARS'])
 
-#def main(dir=DATA_DIR, files=FILE_NAMES, label=LABEL, results_file_name=RESULTS_FILE):
+
 def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DIR, results_dir=config.RESULTS_DIR, results_file=config.RESULTS_FILE, graphs_dir = config.GRAPH_FOLDER,
          variables=config.VARIABLES, models=config.MODELS, eval_metrics=config.EVAL_METRICS,
          eval_metrics_by_level=config.EVAL_METRICS_BY_LEVEL, grid=config.define_clfs_params(config.GRIDSIZE), 
@@ -118,11 +118,12 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
         #scaling continuous variable
         print('Scaling data')
         scaler = MinMaxScaler()
-        for attribute in variables['CONTINUOUS_VARS_MINMAX']:
-            data_for_fitting = df_train[attribute].values.reshape(-1,1)
-            s = scaler.fit(data_for_fitting)
-            df_train[attribute] = scaler.transform(df_train[attribute].values.reshape(-1, 1))
-            df_test[attribute] = scaler.transform(df_test[attribute].values.reshape(-1, 1))
+        cont = variables['CONTINUOUS_VARS_MINMAX']
+        data_for_fitting = df_train[cont]
+        s = scaler.fit(data_for_fitting)
+        df_train[cont] = scaler.transform(df_train[cont])
+        df_test[cont] = scaler.transform(df_test[cont])
+        print(scaler.scale_)
 
         # define list of features
         attributes_lst = [x for x in df_train.columns if x not in variables['VARS_TO_EXCLUDE']]
@@ -130,10 +131,6 @@ def main(gender = config.GENDER, genders=config.GENDERS, data_dir=config.DATA_DI
             if attr not in df_test.columns:
                 df_test.loc[:,attr] = 0
         print('Training set has {} features'.format(len(attributes_lst)))
-        
-        #For debugging the classify function
-        #df_train.to_csv("train.csv")
-        #df_test.to_csv("test.csv")
     
         # run models
         results = pp.classify(df_train, df_test, label, models, eval_metrics, eval_metrics_by_level, grid, attributes_lst, 

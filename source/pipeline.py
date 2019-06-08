@@ -730,8 +730,8 @@ def get_results(test_set, label, eval_metrics, eval_metrics_by_level, eval_resul
                 elif metric == 'recall':
                     recall.append(score)
                 eval_result += [score]
-    if plot_pr:
-        
+    # plot precision and recall if desired
+    if plot_pr:    
         print('plotting precision recall for {}'.format(model_name))
         rec = recall_at_threshold(y_test, test_set['PREDICTION'])
         subtitle = 'Recall at {} is {}'.format(config.POP_THRESHOLD, rec)
@@ -790,18 +790,19 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
     if not os.path.exists(features_txt):
         with open(features_txt, "w") as f:
             print(attributes_lst, file=f)
+    print('features_{}.txt file created'.format(year))
 
     # iterate through models
     for model in models:
-        # if DT, unscale attributes for visualization
+        # if DT, unscale attributes for visualization and classifier
         if model == 'DT':
-            for attribute in variables['CONTINUOUS_VARS_MINMAX']:
-                X_train[attribute] = scaler.inverse_transform(X_train[attribute].values.reshape(-1, 1))
-                X_test[attribute] = scaler.inverse_transform(X_test[attribute].values.reshape(-1, 1))
-                print('INF IN X_TRAIN: ')
-                print(X_train.columns.to_series()[np.isinf(X_train).any()])
-                print('INF IN X_TEST: ')
-                print(X_test.columns.to_series()[np.isinf(X_test).any()])
+            cont = variables['CONTINUOUS_VARS_MINMAX']
+            X_train[cont] = scaler.inverse_transform(X_train[cont])
+            X_test[cont] = scaler.inverse_transform(X_test[cont])
+            # print('INF IN X_TRAIN: ')
+            # print(X_train.columns.to_series()[np.isinf(X_train).any()])
+            # print('INF IN X_TEST: ')
+            # print(X_test.columns.to_series()[np.isinf(X_test).any()])
 
         #create parameters grids
         grid = ParameterGrid(custom_grid[model])
@@ -811,20 +812,16 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
             print('Running model: {}, param: {}'.format(model, parameters))
             # set parameters
             clfr = classifier.set_params(**parameters)
-            
             clfr.fit(X_train, y_train)
 
-            # unscale, fit and saves decision tree
+            # visualize decision tree
             if isinstance(clfr, DecisionTreeClassifier):
                 filename = '{}_{}_{}.png'.format(year, model, str(parameters).replace(':','-'))
                 visualize_tree(clfr, attributes_lst, ['No','Yes'], filename, config.VISUALIZE_DT)
-
-
             
             # Get feature importance
             filename = 'FIMPORTANCE_{}_{}_{}.csv'.format(year, model, str(parameters).replace(':','-'))
             get_feature_importance(clfr, attributes_lst, filename, config.FEATURE_IMP)
-
 
             # calculate scores
             if isinstance(clfr, LinearSVC):
@@ -875,9 +872,6 @@ def classify(train_set, test_set, label, models, eval_metrics, eval_metrics_by_l
                 with open(outfile, "a") as f:
                     csvwriter = csv.writer(f)
                     csvwriter.writerow(eval_result)
-            
-            # plot precision and recall if desired
-
 
             
 
