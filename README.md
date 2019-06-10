@@ -35,7 +35,7 @@ We generated our features by creating a sqlite3 database that holds that relevan
 
 # Pipeline
 
-The pipeline consists of :
+The pipeline consists of four main files located in the /source folder:
 
 * pipeline.py: helper functions for preprocessing data, running models, and plotting results
 
