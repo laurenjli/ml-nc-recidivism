@@ -35,5 +35,27 @@ We generated our features by creating a sqlite3 database that holds that relevan
 
 # Pipeline
 
+The pipeline consists of :
+
+* pipeline.py: helper functions for preprocessing data, running models, and plotting results
+
+* traintest.py: to create the sqlite3 database, labels, features, and csv train/test sets (create_sqldb.py, features.py, and gettinglabels.py feed into this file)
+
+* config.py: to set the parameters for the models you'd like to run
+
+* main.py: to run the models given the parameters from config.py
+
+
+Running the code can be done as follows:
+
+1. Download the NC DPS data
+2. Configure the config.py file
+3. Run 
+``` python 
+python3 main.py 
+```
+
+python3 main.py
+
 # Example Pipeline Run
 
