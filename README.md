@@ -14,7 +14,7 @@ The data is provided by North Carolina's Department of Public Safety. To obtain 
 
 # Feature Generation
 
-We generated our features by creating a sqlite3 database that holds that relevant NC DPS data. We built features on 
+We generated our features by creating a sqlite3 database that holds that relevant NC DPS data. We built features on the following: 
 
 * Age (at start of incarceration, end of incarceration, and at first incarceration)
 
