@@ -55,7 +55,3 @@ Running the code can be done as follows:
 python3 main.py 
 ```
 
-python3 main.py
-
-# Example Pipeline Run
-
