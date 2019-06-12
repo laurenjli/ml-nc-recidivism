@@ -5,7 +5,11 @@ This repository contains files to run machine learning models that predict recid
 
 # Dependencies
 
-See requirements.txt.
+Install dependencies using pip:  
+``` bash 
+pip install -r requirements.txt
+```
+The code requires [Aequitas](https://github.com/dssg/aequitas) which is compatible with: Python 3.6+  
 
 
 # Data
