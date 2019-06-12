@@ -84,7 +84,8 @@ def full_traintest(time_period=365.0):
         filedir = os.path.join(config.CSVFOLDER, "{}.csv".format(table))
         if not os.path.exists(filedir):
             print('Have you downloaded {}?'.format(table))
-            print('Check README for data required')
+            print('Check README for data required.')
+            return
 
     # check if full database exists
     if not os.path.exists(config.DATABASE_FILENAME):
