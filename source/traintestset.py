@@ -72,14 +72,22 @@ def get_train_test_splits(train_start_year=1995, test_start_year=1997, time_peri
 
 
 def full_traintest(time_period=365.0):
+    # check if necessary directories exist
+    if not os.path.exists(config.CSVFOLDER):
+        os.mkdir(config.CSVFOLDER)
 
     # check if full database exists
     if not os.path.exists(config.DATABASE_FILENAME):
         setup()  # To load database of data tables
 
-    gettinglabels.create_labels(config.DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')  # Get labels
-    ft.add_all_features() # Create new table data for features and data
+    # Get labels
+    gettinglabels.create_labels(config.DATABASE_FILENAME, time_period=time_period, default_max = 10000.0, table_name = 'labels')
+    # Create new tables for features and data
+    ft.add_all_features()
 
+    # Create train test sets
+    if not os.path.exists(config.DATA_DIR):
+        os.mkdir(config.DATA_DIR)
     test_year=1997
     while test_year <= 2017:
         temporal_validation('test_'+ str(test_year), train_start_year=1995, test_start_year=test_year, time_period=time_period)

@@ -4,10 +4,9 @@ Code to join tables and get labels for NC recidivism data
 
 import sqlite3
 import csv
+import config
 
-DATABASE_FILENAME="../ncdoc_data/data/preprocessed/inmates.db"
-
-def query_db(query, args, database_path=DATABASE_FILENAME, table_name='data', new_table=True, csv_filename=None):
+def query_db(query, args, database_path=config.DATABASE_FILENAME, table_name='data', new_table=True, csv_filename=None):
     '''
     Code to query db from python
     Creates new table to place output and writes in csv file
@@ -67,7 +66,7 @@ def get_header(cursor):
 
     return header
     
-def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_max = 10000.0, table_name = 'labels'):
+def create_labels(database_path=config.DATABASE_FILENAME, time_period = 365.0, default_max = 10000.0, table_name = 'labels'):
     '''
     This function creates a new relation in the database with labels for the given time_period.
 
@@ -120,7 +119,7 @@ def create_labels(database_path=DATABASE_FILENAME, time_period = 365.0, default_
 
 
 if __name__ == '__main__':
-    create_labels(database_path = DATABASE_FILENAME,
+    create_labels(database_path = config.DATABASE_FILENAME,
                   time_period = 365.0, 
                   default_max = 10000.0, 
                   table_name = 'labels')
