@@ -76,6 +76,16 @@ def full_traintest(time_period=365.0):
     if not os.path.exists(config.CSVFOLDER):
         os.mkdir(config.CSVFOLDER)
 
+    # check if data exists
+    data = ['OFNT3CE1','INMT4AA1', 'INMT4BB1', 'INMT9CF1', \
+            'OFNT1BA1', 'OFNT3BB1', 'OFNT3DE1', 'INMT4CA1']
+    
+    for table in data:
+        filedir = os.path.join(config.CSVFOLDER, "{}.csv".format(table))
+        if not os.path.exists(filedir):
+            print('Have you downloaded {}?'.format(table))
+            print('Check README for data required')
+
     # check if full database exists
     if not os.path.exists(config.DATABASE_FILENAME):
         setup()  # To load database of data tables

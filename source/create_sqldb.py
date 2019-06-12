@@ -2,6 +2,7 @@ import sqlite3
 import os
 import csv
 import pandas as pd
+import config
 
 
 def clean_str(col_names):
@@ -26,7 +27,7 @@ def clean_str(col_names):
     return col_names
 
 
-def create_db(data_dir="../ncdoc_data/data/preprocessed"):
+def create_db(data_dir=config.CSVFOLDER):
     con = sqlite3.connect(os.path.join(data_dir, "inmates.db"))
     cur = con.cursor()
 
